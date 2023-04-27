@@ -10,6 +10,10 @@ module.exports = function (app) {
     app.route('/signup').get(homecontroller.signup);
     app.route('/signup').post(homecontroller.signup);
 
+    app.route('/logout').get(homecontroller.logout);
+    app.route('/logout').post(homecontroller.logout);
+
+
     app.route('/blank').get(Tools.isLoggedIn,homecontroller.blank);
     app.route('/blank').post(Tools.isLoggedIn,homecontroller.blank);
 }
