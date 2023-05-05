@@ -4,7 +4,8 @@ const saltRounds = 10;
 
 exports.home = function (req,res) {
     res.render("index", {
-        test:"testt"
+        test:"testt",
+        user:req.session.user
     })
 }
 
@@ -26,7 +27,8 @@ exports.login =  async  function   (req,res)  {
         req.session.user = user;
         res.json({ 
             success: true,
-            message: 'Login successful'
+            message: 'Login successful',
+            user:user
          });
     }else {
         res.render("auth-sign-in", {
