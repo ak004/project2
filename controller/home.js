@@ -2,13 +2,32 @@ const User = require('../model/user');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const saltRounds = 10;
-const sgMail = require('@sendgrid/mail');
-var SibApiV3Sdk = require('sib-api-v3-sdk');
-var defaultClient = SibApiV3Sdk.ApiClient.instance;
-sgMail.setApiKey("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");
 
+require('dotenv').config();
 
+console.log("the checking is: ",);
 
+var smtpConfig = {
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASS
+    }
+};
+var tranporter = nodemailer.createTransport(smtpConfig);
+ 
+ 
+
+tranporter.verify((error1, success) => {
+    if(error1) {
+        console.log("There is an error: ", error1);
+    }else {
+        console.log("ready for email");
+        console.log(success);
+    }
+})
 
 
 exports.home = function (req,res) {
@@ -104,43 +123,40 @@ exports.signup = function (req,res) {
 }
 
 exports.send_verification = function(req, res) {
-    console.log("theher::::",process.env.SENDGRID_API_KEY );
+ 
+    User.find({email: req.body.email}).then((found_user) => {
+        if(found_user.length >0) {
+            res.json({
+                success: false,
+                message: "User already exits"
+            })
+            return;
+        }else {
+            var code = Math.floor(100000 + Math.random() * 900000);
+            console.log("the code is:", code);
+                send(req.body.email,code);
+                res.json({
+                    success:true,
+                    email:req.body.email,
+                    codee: code,
+                    message:"We send you a verfication code in your please check if there is no email please check your spam box"
+                })
+        }
+    })
 
-    console.log("the email is", req.body);
-    // Generate a verification number
-const verificationNumber = Math.floor(100000 + Math.random() * 900000);
-
- // Configure API key authorization: api-key
-var apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = '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';
-
-var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
-var sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); // SendSmtpEmail | Values to send a transactional email
-
-sendSmtpEmail = {
-    to: [{
-        email: req.body.email,
-        name: req.body.email
-    }],
-    templateId: 59,
-    params: {
-        name: 'John',
-        surname: 'Doe'
-    },
-    headers: {
-        'X-Mailin-custom': 'custom_header_1:custom_value_1|custom_header_2:custom_value_2'
-    }
-};
-
-apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
-  console.log('API called successfully. Returned data: ' + data);
-}, function(error) {
-  console.error(error);
-});
 
 }
 
+
+async function send(email,vcode) {
+    const result = await tranporter.sendMail({
+        from: "Mascuud",
+        to: email,
+        subject: 'Verfication',
+        text: "Your verifaction code is: " + vcode
+    });
+
+}
 
 exports.blank = function (req,res) {
     res.render("blank_page", {
