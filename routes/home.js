@@ -16,6 +16,9 @@ module.exports = function (app) {
     app.route('/logout').get(homecontroller.logout);
     app.route('/logout').post(homecontroller.logout);
 
+    app.route('/profile').get(Tools.isLoggedIn,homecontroller.profile);
+    app.route('/profile').post(Tools.isLoggedIn,homecontroller.profile);
+    app.route('/updata_user_data').post(Tools.isLoggedIn,homecontroller.updata_user_data);
 
     app.route('/blank').get(Tools.isLoggedIn,homecontroller.blank);
     app.route('/blank').post(Tools.isLoggedIn,homecontroller.blank);

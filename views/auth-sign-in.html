@@ -109,12 +109,7 @@ function login() {
                dataType: "json",
                success: function (res) {
                  if(res.success) {
-                  Swal.fire({
-                            title: res.message,
-                            icon: 'success'
-                        }).then(_ => {
-                           window.location.href = "/"
-                        })
+                  window.location.href = "/"
                  }else {
                  $('#message').text("");
                  $('#message').append(res.message);

@@ -163,3 +163,13 @@ exports.blank = function (req,res) {
         test:"testt"
     })
 }
+exports.profile = function (req,res) {
+    res.render("user-profile", {
+        test:"testt",
+        user:req.session.user
+    })
+}
+
+exports.updata_user_data = function (req,res) {
+    console.log("______", req.body);
+}
