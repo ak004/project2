@@ -39,15 +39,15 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <form id="personal_info_form" name="personal_info_form" action="/updata_user_data" method="post">
+                                <form id="personal_info_form" name="personal_info_form" action="/updata_user_data" method="post" enctype="multipart/form-data">
                                     <div class="form-group row align-items-center">
                                         <div class="col-md-12">
                                         <div class="profile-img-edit">
                                             <div class="crm-profile-img-edit">
-                                                <img class="crm-profile-pic rounded-circle avatar-100" src="images/user/profile-img.png" alt="profile-pic">
+                                                <img id="profile-pic" class="crm-profile-pic rounded-circle avatar-100" src="images/user/profile-img.png" alt="profile-pic">
                                                 <div class="crm-p-image bg-primary">
                                                     <i class="las la-pen upload-button"></i>
-                                                    <input class="file-upload" type="file" accept="image/*">
+                                                    <input id="file-upload" name="image" class="file-upload" type="file" accept="image/*">
                                                 </div>
                                             </div>                                          
                                         </div>
@@ -60,30 +60,19 @@
                                         </div>
                                         <div class="form-group col-sm-6">
                                         <label for="lname">Last Name:</label>
-                                        <input type="text" class="form-control" id="lname" name="lname" value="" required>
+                                        <input type="text" class="form-control" id="lname" name="lname" value="<%=user.last_name%>" required>
                                         </div>
                                         <div class="form-group col-sm-6">
                                         <label for="uname">User Name:</label>
-                                        <input type="text" class="form-control" id="uname"  value="<%=user.user_name%>" readonly>
+                                        <input type="text" class="form-control" id="username" name="username"  value="<%=user.user_name%>" readonly>
                                         </div>
                                         <div class="form-group col-sm-6">
                                         <label for="cname">City:</label>
-                                        <input type="text" class="form-control" id="cname" name="cname" value="" required>
-                                        </div>
-                                        <div class="form-group col-sm-6">
-                                        <label class="d-block">Gender:</label>
-                                        <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" id="male" name="male" class="custom-control-input" checked="">
-                                            <label class="custom-control-label" for="customRadio6"> Male </label>
-                                        </div>
-                                        <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" id="female" name="female" class="custom-control-input">
-                                            <label class="custom-control-label" for="customRadio7"> Female </label>
-                                        </div>
+                                        <input type="text" class="form-control" id="city" name="city" value="<%=user.city%>" required>
                                         </div>
                                         <div class="form-group col-sm-6">
                                         <label for="dob">Date Of Birth:</label>
-                                        <input  type="date"class="form-control" id="dob" name="dob" required>
+                                        <input  type="date"class="form-control" id="dob" name="dob"  required>
                                         </div>
                                         <div class="form-group col-sm-6">
                                         <label>Marital Status:</label>
@@ -97,16 +86,16 @@
                                         </div>
                                         <div class="form-group col-sm-6">
                                             <label for="fname">Email:</label>
-                                            <input type="email" class="form-control" id="uemail" value="<%=user.email%>" readonly>
+                                            <input type="email" class="form-control" id="email" name="email" value="<%=user.email%>" readonly>
                                         </div>
                                         <div class="form-group col-sm-6">
                                             <label for="fname">Phone:</label>
-                                            <input type="number" class="form-control" id="uphone" name="uphone" value="<%=user.phone%>" required >
+                                            <input type="number" class="form-control" id="phone" name="phone" value="<%=user.phone%>" required >
                                         </div>
                                       
                                         <div class="form-group col-sm-12">
                                         <label>Address:</label>
-                                        <textarea class="form-control" name="address" id="address" rows="5" style="line-height: 22px;">
+                                        <textarea class="form-control" name="address" id="address" rows="5" value="<%=user.address%>" style="line-height: 22px;">
                                         
                                         </textarea>
                                         </div>
@@ -416,3 +405,51 @@
         </div>
     </div>
     <%- include('footer.html'); -%>
+
+    <script>
+
+const fileUpload = document.getElementById('file-upload');
+const profilePic = document.getElementById('profile-pic');
+
+fileUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.addEventListener('load', (event) => {
+        profilePic.src = event.target.result;
+    });
+
+    reader.readAsDataURL(file);
+});
+
+
+$('#personal_info_form').on('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var datadd = {};
+
+        // Append all form fields to the formData object
+        $('input, select, textarea', this).each(function() {
+        var field = $(this);
+        var name = field.attr('name');
+        var value = field.val();
+        datadd[name] = value;
+        formData.append(field.attr('name'), field.val());
+        });
+        console.log("----",datadd);
+        $.ajax({
+        url: '/updata_user_data',
+        type: 'post',
+        data: datadd,
+        dataType: "json",
+        success: function(res) {
+            if(res.success) {
+                window.location.reload();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        }
+        });
+  });
+    </script>

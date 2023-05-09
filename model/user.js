@@ -8,8 +8,29 @@ userschema = new Schema({
         type: String,
         required: true
     },
+    last_name: {
+        type: String,
+        default: ""
+    },
+    city: {
+        type: String,
+        default: ""
+    },
+    dob: {
+        type: Date,
+        default: null
+    },
+    martial_status: {
+        type: String,
+        default: ""
+    },
+    address: {
+        type: String,
+        default: ""
+    },
     email: {
         type: String,
+        unique:true
     },
     user_name: {
         type: String,

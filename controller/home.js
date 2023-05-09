@@ -172,4 +172,31 @@ exports.profile = function (req,res) {
 
 exports.updata_user_data = function (req,res) {
     console.log("______", req.body);
+    console.log("___files___", req.file);
+
+    User.find({email: req.body.email}).then((data) => {
+        if(data.length > 0) {
+            let date = new Date(req.body.dob);
+            User.findByIdAndUpdate({_id: data[0]._id},{
+                $set:{
+                    name:req.body.fname,
+                    city:req.body.city,
+                    martial_status:req.body.martial_status,
+                    phone:req.body.phone,
+                    dob: date.toISOString(),
+                    address:req.body.address.trim()
+                }
+            }).then(() => {
+                res.json({
+                    success:true,
+                    message: "Successfully updated the data"
+                })
+            })
+        }else {
+            res.json({
+                success:false,
+                message: "Couldnt find the user"
+            })
+        }
+    })
 }
