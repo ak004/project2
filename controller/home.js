@@ -94,6 +94,7 @@ exports.signup = function (req,res) {
                             req.body.password = hash;
                             console.log("the hashh is", hash);
                             console.log(req.body);
+                            req.body.role = "user";
                             new User(req.body).save().then((sv_data) => {
                                 if(sv_data)  {
                                     res.json({
@@ -180,17 +181,17 @@ exports.updata_user_data = function (req,res) {
             User.findByIdAndUpdate({_id: data[0]._id},{
                 $set:{
                     name:req.body.fname,
+                    last_name: req.body.lname,
                     city:req.body.city,
-                    martial_status:req.body.martial_status,
+                    martial_status:req.body.marital_status,
                     phone:req.body.phone,
                     dob: date.toISOString(),
                     address:req.body.address.trim()
                 }
             }).then(() => {
-                res.json({
-                    success:true,
-                    message: "Successfully updated the data"
-                })
+               
+                req.session.destroy();
+                res.redirect("/");
             })
         }else {
             res.json({
