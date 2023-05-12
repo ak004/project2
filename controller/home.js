@@ -1,11 +1,12 @@
 const User = require('../model/user');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const Modules = require('../model/modules');
 const saltRounds = 10;
-
+const mongoose = require('mongoose');
+// const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
 
-console.log("the checking is: ",);
 
 var smtpConfig = {
     host: 'smtp.gmail.com',
@@ -22,7 +23,6 @@ var tranporter = nodemailer.createTransport(smtpConfig);
 
 tranporter.verify((error1, success) => {
     if(error1) {
-        console.log("There is an error: ", error1);
     }else {
         console.log("ready for email");
         console.log(success);
@@ -74,7 +74,6 @@ exports.logout = function (req,res) {
 exports.signup = function (req,res) {
 
     if (Object.keys(req.body).length > 0) {
-         console.log("the bodyy", req.body);
         User.find({username:req.body.user_name}).then((data) => {
             if(data.length > 0) {
                 res.json({
@@ -92,8 +91,6 @@ exports.signup = function (req,res) {
                         bcrypt.genSalt(saltRounds, function(err, salt) {
                             bcrypt.hash(req.body.password, salt, function(err, hash) {
                             req.body.password = hash;
-                            console.log("the hashh is", hash);
-                            console.log(req.body);
                             req.body.role = "user";
                             new User(req.body).save().then((sv_data) => {
                                 if(sv_data)  {
@@ -172,9 +169,6 @@ exports.profile = function (req,res) {
 }
 
 exports.updata_user_data = function (req,res) {
-    console.log("______", req.body);
-    console.log("___files___", req.file);
-
     User.find({email: req.body.email}).then((data) => {
         if(data.length > 0) {
             let date = new Date(req.body.dob);
@@ -201,3 +195,67 @@ exports.updata_user_data = function (req,res) {
         }
     })
 }
+
+exports.modules = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var filter = {
+            "$match": {}
+        };
+        if(req.body.status2 == "suspended") {
+            filter["$match"]["status"] = 0;
+        }else if(req.body.status2 == "active") {
+            filter["$match"]["status"] = 2;
+        }
+         if(req.session.user.role == "user") {
+            filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
+         }
+        Modules.aggregate([
+            filter,
+        ]).then((data) => {
+            res.render("modules", {
+                user:req.session.user,
+                data:data,
+                status: req.body.status2
+            })
+        })
+
+    }else {
+        var filter = {
+            "$match": {}
+        };
+        if(req.session.user.role == "user") {
+            filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
+         }
+        Modules.aggregate([filter]).then((mod) => {
+                res.render("modules", {
+                    user:req.session.user,
+                    data:mod,
+                    status: ""
+                })
+        })
+    }
+   
+}
+
+exports.save_modules = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var save_modeule = new Modules({
+            title: req.body.title,
+            discription: req.body.desc,
+            duration: req.body.hours + ":" + req.body.min,
+            price: Number(req.body.price),
+            user_id: req.session.user._id,
+            status: req.body.status == "active" ? 2 : 0
+        });
+
+        save_modeule.save().then((svd) => {
+            if(svd) {
+               res.json({
+                success:true,
+                message:"Module saved successfully"
+               })
+            }
+        })
+    }
+}
+

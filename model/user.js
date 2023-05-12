@@ -51,7 +51,7 @@ userschema = new Schema({
     },
     role: {
         type: String,
-        default: ""
+        default: "user"
     },
  
     token: {
