@@ -1,8 +1,7 @@
 var mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 var Schema = mongoose.Schema;
 
-moduleSchema = new Schema({
+videoSchema = new Schema({
   
     title: {
         type: String,
@@ -12,47 +11,41 @@ moduleSchema = new Schema({
         type: String,
         default: ""
     },
-    notes: {
-        type: String,
-        default: ""
-    },
     duration: {
         type: String,
         default: ""
     },
-    no_of_vids: {
-        type: Number,
-        default: 0
-    },
-    price: {
-        type: Number,
-        default: 0
-    },
-    likes: {
-        type: Number,
-        default: 0
+    notes: {
+        type: String,
+        default: ""
     },
     user_id: {
         type: mongoose.Types.ObjectId,
         default: null
     },
+    module_id: {
+        type: mongoose.Types.ObjectId,
+        require: true,
+    },
     status: {
         type:Number,
         default: 2
     },
-    bought_users: [],
-  
+   path: {
+    type: String,
+    required: true
+   },
     created_at: {
         type: Date,
         default: Date.now
     }
 });
 
-userschema.index({
-    title: 1
-}, {
-    background: true
-});
+// videoSchema.index({
+//     phone: 1
+// }, {
+//     background: true
+// });
  
-const Modules = mongoose.model("modules",  moduleSchema)
-module.exports = Modules;
+const Video = mongoose.model("video",  videoSchema)
+module.exports = Video;

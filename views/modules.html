@@ -38,7 +38,7 @@
                                 
                                </div>
                                <div class="pl-3 border-left btn-new">
-                                   <a href="#" class="btn btn-primary" data-target="#new-project-modal" data-toggle="modal">New Module</a>
+                                   <a href="#" class="btn btn-primary"   onclick="openmodel()" data-toggle="modal">New Module</a>
                                </div>
                            </div>
                        </div>
@@ -50,7 +50,12 @@
            <div class="row">
             <% data.forEach(function(entry) { %>
                 <div class="col-lg-4 col-md-6">
-                    <div class="card card-block card-stretch card-height">
+                    <%if(entry.status == 2) {%>
+                        <div class="card card-block card-stretch card-height"  >
+                        <%}else {%>
+                            <div class="card card-block card-stretch card-height" style="background-color: gainsboro;">
+                            <%}%>
+                  
                         <div class="card-body">
                           
                             <h5 class="mb-1"><%=entry.title%></h5>
@@ -71,7 +76,7 @@
                                 <div>
                                     <% if(user._id.toString() == entry.user_id.toString()) {%>
                                   <button type="button" class="btn btn-danger mt-2" onclick="deltelte_module('<%=entry._id%>')" ><i class="ri-delete-bin-2-fill pr-0"></i></button>
-                                  <button type="button" class="btn btn-warning mt-2" onclick="edit_modeule('<%=entry._id%>')"><i class="ri-edit-2-fill"></i></button>
+                                  <button type="button" class="btn btn-warning mt-2" onclick="edit_modeule('<%=entry._id%>','<%=entry.title%>','<%=entry.discription.replace(/\r?\n|\r/g, '')%>','<%=entry.price%>',' <%=entry.duration%>', '<%=entry.status%>')"><i class="ri-edit-2-fill"></i></button>
                                         <%}%>
                                 </div>
                               </div>
@@ -100,6 +105,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-lg-12">
+                            <input type="hidden" id="_id" name="_id" />
                             <p style="color: red;" id="mes"></p>
                             <div class="form-group mb-3">
                                 <label for="exampleInputText01" class="h5">Module Title*</label>
@@ -125,13 +131,13 @@
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
                                 <label for="exampleInputText004" class="h5">Hours*</label>
-                                <input type="number" class="form-control" id="hours" name="hours" placeholder="0">
+                                <input type="number" class="form-control" id="hours" name="hours">
                             </div>                        
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
                                 <label for="exampleInputText004" class="h5">Mintues*</label>
-                                <input type="number" class="form-control" id="min" name="min" placeholder="0">
+                                <input type="number" class="form-control" id="min" name="min">
                             </div>                        
                         </div>
                        
@@ -162,37 +168,27 @@
  
 $("#status2").change(function () {
     $('#query_form').submit();
-        // var end = this.value;
-        // $.ajax({
-        // url: '/modules',
-        // type: 'post',
-        // data: {status:end},
-        // dataType: "json",
-        // success: function(res) {
-        //     if(res.success) {
-             
-        //     }
-        // },
-        // error: function(jqXHR, textStatus, errorThrown) {
-        //     console.log(textStatus, errorThrown);
-        // }
-        // });
     });
 
     function save_modeule() {
+        let _id = $("#_id").val();
         let title = $("#m_title").val();
         let price = $("#price").val();
         let status = $('#status').val();
         let hours = $('#hours').val();
         let min = $('#min').val();
         let desc = $('#desc').val();
-        if (title.length === 0 || price.length === 0 || status.length === 0 || hours.length === 0 || min.length === 0 || desc.length === 0) {
-                $('#mes').text("Please fill the required fields");
+        if(min.length > 2 || min > 59) {
+                $('#mes').text("Please put a propor duration");
+            }  else {
+                if (title.length === 0 || price.length === 0 || status.length === 0 || hours.length === 0 || min.length === 0 || desc.length === 0) {
+            $('#mes').text("Please fill the required fields");
         } else {
             $.ajax({
                 url: '/save_modules',
                 type: 'post',
                 data: {
+                    _id:_id,
                     title:title,
                     price:price,
                     status:status,
@@ -210,7 +206,64 @@ $("#status2").change(function () {
                     console.log(textStatus, errorThrown);
                 }
                 });
+            }
         }
+    
         
+    }
+   
+    function deltelte_module(id) {
+        $.ajax({
+                url: '/delete_modules',
+                type: 'post',
+                data: {
+                    _id: id
+                },
+                beforeSend: function () {
+                    return confirm("Are you sure? all of the videos under this module will be deleted");
+                },
+                dataType: "json",
+                success: function(res) {
+                    if(res.success) {
+                        Swal.fire(res.message);
+                    window.location.reload(true);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+                });
+    }
+
+    function edit_modeule(id,title,description,price,duration,status) {
+        let minss = duration.split(":")[1];
+        let hourss = duration.split(":")[0];
+        console.log("the duration", typeof(hourss));
+        console.log("the minn", typeof(minss));
+        let status_val ;
+        if(status === "2") {
+            status_val = "active";
+        }else {
+            status_val = "suspended";
+        }
+        $('#_id').val(id);
+        $('#m_title').val(title);
+        $('#price').val(price);
+        $('#hours').val(Number(hourss));
+        $('#min').val(Number(minss));
+        $('#desc').val(description);
+        $('#status').val(status_val).change();
+        $('#new-project-modal').modal('show');
+    }
+
+    function openmodel() {
+        $('#_id').val("");
+        $('#m_title').val("");
+        $('#price').val("");
+        $('#status').val("active").change();
+        $('#hours').val("");
+        $('#min').val("");
+        $('#desc').val("");
+        $('#new-project-modal').modal('show');
     }
 </script>

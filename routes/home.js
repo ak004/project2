@@ -26,6 +26,7 @@ module.exports = function (app) {
     app.route('/modules').get(Tools.isLoggedIn,homecontroller.modules);
     app.route('/modules').post(Tools.isLoggedIn,homecontroller.modules);
     app.route('/save_modules').post(Tools.isLoggedIn,homecontroller.save_modules);
+    app.route('/delete_modules').post(Tools.isLoggedIn,homecontroller.delete_modules);
 
 
 }

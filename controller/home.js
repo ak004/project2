@@ -2,6 +2,7 @@ const User = require('../model/user');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const Modules = require('../model/modules');
+const Video = require('../model/video');
 const saltRounds = 10;
 const mongoose = require('mongoose');
 // const ObjectId = new mongoose.Types.ObjectId;
@@ -239,23 +240,57 @@ exports.modules = function (req,res) {
 
 exports.save_modules = function (req,res) {
     if (Object.keys(req.body).length > 0) {
-        var save_modeule = new Modules({
-            title: req.body.title,
-            discription: req.body.desc,
-            duration: req.body.hours + ":" + req.body.min,
-            price: Number(req.body.price),
-            user_id: req.session.user._id,
-            status: req.body.status == "active" ? 2 : 0
-        });
+        if(req.body._id.length < 5) {
+            var save_modeule = new Modules({
+                title: req.body.title,
+                discription: req.body.desc,
+                duration: req.body.hours + ":" + req.body.min,
+                price: Number(req.body.price),
+                user_id: req.session.user._id,
+                status: req.body.status == "active" ? 2 : 0
+            });
+    
+            save_modeule.save().then((svd) => {
+                if(svd) {
+                   res.json({
+                    success:true,
+                    message:"Module saved successfully"
+                   })
+                }
+            })
+        }else {
+            Modules.findByIdAndUpdate({_id: req.body._id}, {
+                $set:{
+                    title: req.body.title,
+                    discription: req.body.desc,
+                    duration: req.body.hours + ":" + req.body.min,
+                    price: Number(req.body.price),
+                    user_id: req.session.user._id,
+                    status: req.body.status == "active" ? 2 : 0
+                }
+            }).then((upd) => {
+                if(upd) {
+                    res.json({
+                        success:true,
+                        message:"Updated successfully"
+                       })
+                }
+            })
 
-        save_modeule.save().then((svd) => {
-            if(svd) {
-               res.json({
-                success:true,
-                message:"Module saved successfully"
-               })
-            }
-        })
+        }
+    }
+}
+
+exports.delete_modules = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Modules.deleteOne({_id: req.body._id}).then(() => {
+            Video.deleteMany({module_id:new  mongoose.Types.ObjectId(req.body._id) }).then(() => {
+                res.json({
+                    success:true,
+                    message:"Module deleted successfully"
+                })
+            })
+         })
     }
 }
 
