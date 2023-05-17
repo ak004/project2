@@ -28,5 +28,8 @@ module.exports = function (app) {
     app.route('/save_modules').post(Tools.isLoggedIn,homecontroller.save_modules);
     app.route('/delete_modules').post(Tools.isLoggedIn,homecontroller.delete_modules);
 
+    app.route('/upload_videos').get(Tools.isLoggedIn,homecontroller.upload_videos);
+    app.route('/upload_videos').post(Tools.isLoggedIn,homecontroller.upload_videos);
+
 
 }

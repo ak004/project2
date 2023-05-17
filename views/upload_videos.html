@@ -46,50 +46,45 @@
                </div>
            </div>
        </div>
+
+       <%if(modules.length <= 0) {%>
+       <center>
+        <h1 style="font-weight: bold; color: red;"> Please Create a Module first to upload videos under it</h1>
+       </center>
+       <%}else {%>
        <div id="grid" class="item-content animate__animated animate__fadeIn active" data-toggle-extra="tab-content">
            <div class="row">
-            <% data.forEach(function(entry) { %>
-                <div class="col-lg-4 col-md-6">
-                    <%if(entry.status == 2) {%>
-                        <div class="card card-block card-stretch card-height"  >
-                        <%}else {%>
-                            <div class="card card-block card-stretch card-height" style="background-color: gainsboro;">
-                            <%}%>
-                  
-                        <div class="card-body">
-                          
-                            <h5 class="mb-1"><%=entry.title%></h5>
-                            <p class="mb-3"><%=entry.discription%></p>
-                            <div class="d-flex align-items-center justify-content-between pt-3 border-top">
-                             <div class="col-md-3" style="display: flex; align-items: center;">
-                                 <p style="color: red;margin: 0; text-align: center;"> Price: $<%=entry.price%></p>
-                             </div>
-                             <div class="col-md-5"  style="display: flex; align-items: center;" >
-                                 <p style="color: green;margin: 0; text-align: center;" >Duriation: <%=entry.duration%> min</p>
-                             </div>
-                             <div class="col-md-4" style="display: flex; align-items: center;">
-                                 <p style="color: blue;margin: 0; text-align: center;"> No Videos: <%=entry.no_of_vids%></p>
-                             </div>
-                            </div>
-                            <div class="d-flex justify-content-between pt-3 border-top">
-                                <button type="button" class="btn btn-outline-secondary mt-2">View Videos</button>
-                                <div>
-                                    <% if(user._id.toString() == entry.user_id.toString()) {%>
-                                  <button type="button" class="btn btn-danger mt-2" onclick="deltelte_module('<%=entry._id%>')" ><i class="ri-delete-bin-2-fill pr-0"></i></button>
-                                  <button type="button" class="btn btn-warning mt-2" onclick="edit_modeule('<%=entry._id%>','<%=entry.title%>','<%=entry.discription.replace(/\r?\n|\r/g, ``)%>','<%=entry.price%>',' <%=entry.duration%>', '<%=entry.status%>')"><i class="ri-edit-2-fill"></i></button>
-                                        <%}%>
+            <div class="col-lg-12">
+                <div class="card card-widget task-card">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="custom-control custom-task custom-checkbox custom-control-inline">
+                                    <img src="images/user/01.jpg" class="img-fluid rounded-circle avatar-90 m-auto" alt="image">
                                 </div>
-                              </div>
-                        </div>
+                                <div>
+                                    <h5 class="mb-2"> ntinre its longer  </h5>
+                                    <div class="media align-items-center">
+                                        <div class="btn bg-body mr-3"> <i class="ri-timer-line"></i>2:30 min</div>
+                                        <div class="btn bg-body mr-3"><i class="ri-align-justify mr-2"></i>Module: 140</div>
+                                        <div class="btn bg-body"><i class="ri-survey-line mr-2"></i>3</div>
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="mt-md-0 mt-3" style="  float: right;">
+                                  
+                                        <a href="#" class="btn bg-secondary-light mr-3">Delete</a>
+                                        <a class="btn bg-secondary-light" data-toggle="collapse" href="#collapseEdit1" role="button" aria-expanded="false" aria-controls="collapseEdit1"><i class="ri-edit-box-line m-0"></i></a>
+                                     
+                               </div>
+                        </div>  
                     </div>
-                </div>
-                <%})%>
-           
-         
-             
-                
+                </div>                       
+            </div>
            </div>
        </div>
+
+       <%}%>
        
        <!-- Page end  -->
    </div>
