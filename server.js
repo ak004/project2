@@ -1,31 +1,34 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+var multer = require('multer');
 const path = require('path');
 const mongoose = require('mongoose');
 var session = require('express-session');
 const bodyParser = require('body-parser');
 
 
+
+const upload = multer({ dest: 'uploads/' });
+app.use(upload.any());
 app.use(express.urlencoded({
   extended: false
 }));
 app.use(express.json());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+bodyParser.json();
 app.use(express.static('./assets'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  secret: 'bscrsecretcode',
+  secret: 'resturant_secret',
   maxAge: '1h'
 }));
 
+app.use('/images',express.static('images'))
 
 require("./routes/home")(app);
-
 
 const db = "mongodb://0.0.0.0:27017/project2"
 

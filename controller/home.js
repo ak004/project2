@@ -3,8 +3,11 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const Modules = require('../model/modules');
 const Video = require('../model/video');
+const Catagories = require('../model/catagory')
 const saltRounds = 10;
 const mongoose = require('mongoose');
+const Tools  = require('../tools.js');
+
 // const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
 
@@ -197,6 +200,128 @@ exports.updata_user_data = function (req,res) {
     })
 }
 
+
+exports.catagories = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var filter = {
+            "$match": {}
+        };
+        if(req.body.status2 == "suspended") {
+            filter["$match"]["status"] = 0;
+        }else if(req.body.status2 == "active") {
+            filter["$match"]["status"] = 2;
+        }
+         if(req.session.user.role == "user") {
+            filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
+         }
+         Catagories.aggregate([
+            filter,
+        ]).then((data) => {
+            res.render("catagories", {
+                user:req.session.user,
+                data:data,
+                status: req.body.status2
+            })
+        })
+
+    }else {
+        var filter = {
+            "$match": {}
+        };
+        if(req.session.user.role == "user") {
+            filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
+         }
+         Catagories.aggregate([filter]).then((mod) => {
+                res.render("course_catagories", {
+                    user:req.session.user,
+                    data:mod,
+                    status: ""
+                })
+        })
+    }
+}
+
+exports.new_catagory = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+
+        if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
+            var img = "";
+            var liner2 = "";
+            req.files.forEach( async (imagess)  => {
+          
+              var url = "";
+                  var image_name =tokenGenerator(29);
+                  url = "./images/" + image_name + '.jpg';
+                  liner2 = "images/" + image_name + '.jpg';
+             
+                   Tools.uploadtos3(imagess,liner2);
+                  console.log("check------------", liner2);
+                  img = liner2
+            })
+          //  delete_uncert_data();
+            var save_restura = new Catagories({
+                title: req.body.r_title,
+                discription: req.body.desc,
+                status: req.body.status == "active" ? 2 : 0,
+                image:liner2
+            });
+            save_restura.save().then((svf) => {
+                if (svf) {
+                  res.redirect('/course_catagories')
+                }
+             })
+        }else {
+            Catagories.findOne({_id:req.body._id}).then((r) => {
+                if(r) {
+                    var img = "";
+                          req.files.forEach( async (imagess) => {
+                                    var url = "";
+                                    var liner2 = "";
+                                    var image_name =tokenGenerator(29);
+                                    url = "./images/" + image_name + '.jpg';
+                                    liner2 = "images/" + image_name + '.jpg';
+                                    Tools.uploadtos3(imagess,liner2);
+                                    console.log("check------------", liner2);
+                                    img = liner2
+                          })
+
+                          Catagories.findByIdAndUpdate({_id: r._id}, {
+                            $set:{
+                                title: req.body.r_title,
+                                discription: req.body.desc,
+                                status: req.body.status == "active" ? 2 : 0,
+                                image:img
+                            }
+                        }).then((upd) => {
+                            if(upd) {
+                                res.redirect('/catagories')
+                            }else {
+                                res.json({
+                                    success: false,
+                                    message: "Couldnt update"
+                                })
+                            }
+                        })
+
+                }else {
+                    res.json({
+                        success: false,
+                        message: "Couldnt find the resturant"
+                    })
+                }
+            })
+        }
+
+    }else {
+       
+        res.json({
+            success: false,
+            message: "no data found"
+        })
+    }
+}
+
+
 exports.modules = function (req,res) {
     if (Object.keys(req.body).length > 0) {
         var filter = {
@@ -316,4 +441,18 @@ exports.upload_videos = function (req,res) {
         })
     }
 }
+
+
+tokenGenerator = function (length) {
+    if (typeof length == "undefined") length = 32;
+    var token = "";
+    var possible =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < length; i++)
+        token += possible.charAt(Math.floor(Math.random() * possible.length));
+    return token;
+  };
+
+  
+
 

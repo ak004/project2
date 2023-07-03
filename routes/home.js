@@ -23,6 +23,11 @@ module.exports = function (app) {
     app.route('/blank').get(Tools.isLoggedIn,homecontroller.blank);
     app.route('/blank').post(Tools.isLoggedIn,homecontroller.blank);
 
+    
+    app.route('/catagories').get(Tools.isLoggedIn,homecontroller.catagories);
+    app.route('/catagories').post(Tools.isLoggedIn,homecontroller.catagories);
+    app.route('/new_catagory').post(Tools.isLoggedIn,homecontroller.new_catagory);
+
     app.route('/modules').get(Tools.isLoggedIn,homecontroller.modules);
     app.route('/modules').post(Tools.isLoggedIn,homecontroller.modules);
     app.route('/save_modules').post(Tools.isLoggedIn,homecontroller.save_modules);
