@@ -36,6 +36,14 @@ moduleSchema = new Schema({
         type: mongoose.Types.ObjectId,
         default: null
     },
+    catagory_id: {
+        type: mongoose.Types.ObjectId,
+        required:true
+    },
+    image: {
+        type: String,
+        default: ""
+    },
     status: {
         type:Number,
         default: 2
