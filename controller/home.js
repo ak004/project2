@@ -267,7 +267,7 @@ exports.new_catagory = function (req,res) {
             });
             save_restura.save().then((svf) => {
                 if (svf) {
-                  res.redirect('/course_catagories')
+                  res.redirect('/catagories')
                 }
              })
         }else {
@@ -338,10 +338,13 @@ exports.modules = function (req,res) {
         Modules.aggregate([
             filter,
         ]).then((data) => {
-            res.render("modules", {
-                user:req.session.user,
-                data:data,
-                status: req.body.status2
+            Catagories.find({status: 2}).then((cat) => {
+                res.render("modules", {
+                    user:req.session.user,
+                    data:data,
+                    status: req.body.status2,
+                    cat:cat
+                })
             })
         })
 
@@ -353,11 +356,14 @@ exports.modules = function (req,res) {
             filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
          }
         Modules.aggregate([filter]).then((mod) => {
+            Catagories.find({status: 2}).then((cat) => {
                 res.render("modules", {
                     user:req.session.user,
                     data:mod,
-                    status: ""
+                    status: "",
+                    cat:cat
                 })
+            })
         })
     }
    
@@ -372,6 +378,7 @@ exports.save_modules = function (req,res) {
                 duration: req.body.hours + ":" + req.body.min,
                 price: Number(req.body.price),
                 user_id: req.session.user._id,
+                catagory_id:req.body.m_cat,
                 status: req.body.status == "active" ? 2 : 0
             });
     
@@ -391,6 +398,7 @@ exports.save_modules = function (req,res) {
                     duration: req.body.hours + ":" + req.body.min,
                     price: Number(req.body.price),
                     user_id: req.session.user._id,
+                    catagory_id:req.body.m_cat,
                     status: req.body.status == "active" ? 2 : 0
                 }
             }).then((upd) => {
