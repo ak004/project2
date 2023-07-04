@@ -76,7 +76,7 @@
                                 <div>
                                     <% if(user._id.toString() == entry.user_id.toString()) {%>
                                   <button type="button" class="btn btn-danger mt-2" onclick="deltelte_module('<%=entry._id%>')" ><i class="ri-delete-bin-2-fill pr-0"></i></button>
-                                  <button type="button" class="btn btn-warning mt-2" onclick="edit_modeule('<%=entry._id%>','<%=entry.title%>','<%=entry.discription.replace(/\r?\n|\r/g, ``)%>','<%=entry.price%>',' <%=entry.duration%>', '<%=entry.status%>')"><i class="ri-edit-2-fill"></i></button>
+                                  <button type="button" class="btn btn-warning mt-2" onclick="edit_modeule('<%=entry._id%>','<%=entry.title%>','<%=entry.discription.replace(/\r?\n|\r/g, ``)%>','<%=entry.price%>',' <%=entry.duration%>', '<%=entry.status%>','<%=entry.catagory_id%>','<%=entry.image%>' )"><i class="ri-edit-2-fill"></i></button>
                                         <%}%>
                                 </div>
                               </div>
@@ -103,33 +103,23 @@
                     <h3 class="modal-title" id="exampleModalCenterTitle01">New Module</h3>
                 </div>
                 <div class="modal-body">
+                    <form id="new_restuarant"   action="/save_modules"  name="new_restuarant" method="POST" enctype="multipart/form-data">
                     <div class="row">
                         <div class="col-lg-12">
                             <input type="hidden" id="_id" name="_id" />
                             <p style="color: red;" id="mes"></p>
                             <div class="form-group mb-3">
-                                <label for="m_cat" class="h5">Module Title*</label>
-                                <input type="text" class="form-control" id="m_cat" name="m_cat" placeholder="Module Name">
+                                <label for="m_title" class="h5">Module Title*</label>
+                                <input type="text" class="form-control" id="m_title" name="m_title" placeholder="Module Name">
                             </div>
                         </div>
 
-                        <div class="col-lg-12">
-                            <div class="form-group mb-3">
-                                <label for="exampleInputText2" class="h5">Catagories*</label>
-                                <select name="status" class="selectpicker form-control" id="status"  data-style="py-0" required>
-                                    <option value="">Select Catagory</option>
-                                    <% cat.forEach(function(c) { %>
-                                        <option value="<%=c._id%>"><%=c.title %></option>
-                                        <%})%>
-
-                                </select>
-                            </div>
-                        </div>
+                    
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
                                 <label for="exampleInputText004" class="h5">Price*</label>
-                                <input type="number" class="form-control" id="price" value="">
+                                <input type="number" class="form-control" name="price" id="price" value="">
                             </div>                        
                         </div>
                         <div class="col-lg-6">
@@ -153,7 +143,33 @@
                                 <label for="exampleInputText004" class="h5">Mintues*</label>
                                 <input type="number" class="form-control" id="min" name="min">
                             </div>                        
+                        </div>    
+                        <div class="col-lg-6">
+                            <div class="form-group mb-3">
+                                <label for="exampleInputText2" class="h5">Catagories*</label>
+                                <select name="m_cat" class="selectpicker form-control" id="m_cat"  data-style="py-0" required>
+                                    <option value="">Select Catagory</option>
+                                    <% cat.forEach(function(c) { %>
+                                        <option value="<%=c._id%>"><%=c.title %></option>
+                                        <%})%>
+
+                                </select>
+                            </div>
                         </div>
+
+
+                        <div class="col-lg-6">
+                            <label for="exampleInputText004" class="h5">Image*</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                   <span class="input-group-text">Upload</span>
+                                </div>
+                                <div class="custom-file">
+                                   <input type="file" class="custom-file-input"  name="res_image" id="imageUpload" accept=".png, .jpg, .jpeg" >
+                                   <label class="custom-file-label selected" style="  white-space: nowrap;  overflow: hidden; text-overflow: ellipsis; max-width: 100%;"  id="input_namee" ></label>
+                                </div>
+                             </div>
+                    </div>
                        
                         <div class="col-lg-12">
                             <div class="form-group mb-3">
@@ -165,11 +181,13 @@
                         </div>
                         <div class="col-lg-12">
                             <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-2">
-                                <div class="btn btn-primary mr-3"   onclick="save_modeule()" >Save</div>
+                                <input class="btn btn-primary btn-lg mr-3" type="submit" value="Submit" />
+                                <!-- <div class="btn btn-primary mr-3"   onclick="save_modeule()" >Save</div> -->
                                 <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
                             </div>
                         </div>
                     </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -192,6 +210,7 @@ $("#status2").change(function () {
         let hours = $('#hours').val();
         let min = $('#min').val();
         let desc = $('#desc').val();
+        let m_cat = $('#m_cat').val();
         if(min.length > 2 || min > 59) {
                 $('#mes').text("Please put a propor duration");
             }  else {
@@ -199,7 +218,7 @@ $("#status2").change(function () {
             $('#mes').text("Please fill the required fields");
         } else {
             $.ajax({
-                url: '/save_modules',
+                url: '/ ',
                 type: 'post',
                 data: {
                     _id:_id,
@@ -209,6 +228,7 @@ $("#status2").change(function () {
                     hours:hours,
                     min:min,
                     desc:desc,
+                    m_cat:m_cat
                 },
                 dataType: "json",
                 success: function(res) {
@@ -249,7 +269,7 @@ $("#status2").change(function () {
                 });
     }
 
-    function edit_modeule(id,title,description,price,duration,status) {
+    function edit_modeule(id,title,description,price,duration,status,cat_id,img) {
         let minss = duration.split(":")[1];
         let hourss = duration.split(":")[0];
         console.log("the duration", typeof(hourss));
@@ -266,6 +286,7 @@ $("#status2").change(function () {
         $('#hours').val(Number(hourss));
         $('#min').val(Number(minss));
         $('#desc').val(description);
+        $('#m_cat').val(cat_id).change();
         $('#status').val(status_val).change();
         $('#new-project-modal').modal('show');
     }

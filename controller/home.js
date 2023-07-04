@@ -34,6 +34,13 @@ tranporter.verify((error1, success) => {
 })
 
 
+exports.showimage = function (req,res) {
+
+    const readstreamm =  Tools.getStreamImage("tutoring_images/images/"+ req.params.key);
+    readstreamm.pipe(res)
+}
+
+
 exports.home = function (req,res) {
     res.render("index", {
         test:"testt",
@@ -372,25 +379,57 @@ exports.modules = function (req,res) {
 exports.save_modules = function (req,res) {
     if (Object.keys(req.body).length > 0) {
         if(req.body._id.length < 5) {
+            console.log("the save body: ", req.body);
+            console.log("the save body: ", req.files);
+           
+            var img = "";
+            var liner2 = "";
+            if(req.files.length > 0 ) {
+                req.files.forEach( async (imagess)  => {
+          
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./images/" + image_name + '.jpg';
+                        liner2 = "images/" + image_name + '.jpg';
+                   
+                         Tools.uploadtos3(imagess,liner2);
+                        console.log("check------------", liner2);
+                        img = liner2
+                  })
+            }
+          
             var save_modeule = new Modules({
-                title: req.body.title,
+                title: req.body.m_title,
                 discription: req.body.desc,
                 duration: req.body.hours + ":" + req.body.min,
                 price: Number(req.body.price),
                 user_id: req.session.user._id,
                 catagory_id:req.body.m_cat,
-                status: req.body.status == "active" ? 2 : 0
+                status: req.body.status == "active" ? 2 : 0,
+                image:liner2
             });
     
             save_modeule.save().then((svd) => {
                 if(svd) {
-                   res.json({
-                    success:true,
-                    message:"Module saved successfully"
-                   })
+                    res.redirect('/modules')
                 }
             })
         }else {
+            var img = "";
+            var liner2 = "";
+            if(req.files.length > 0 ) {
+                req.files.forEach( async (imagess)  => {
+          
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./images/" + image_name + '.jpg';
+                        liner2 = "images/" + image_name + '.jpg';
+                   
+                         Tools.uploadtos3(imagess,liner2);
+                        console.log("check------------", liner2);
+                        img = liner2
+                  })
+            }
             Modules.findByIdAndUpdate({_id: req.body._id}, {
                 $set:{
                     title: req.body.title,
@@ -399,14 +438,13 @@ exports.save_modules = function (req,res) {
                     price: Number(req.body.price),
                     user_id: req.session.user._id,
                     catagory_id:req.body.m_cat,
+                    catagory_id:req.body.m_cat,
+                    image:liner2,
                     status: req.body.status == "active" ? 2 : 0
                 }
             }).then((upd) => {
                 if(upd) {
-                    res.json({
-                        success:true,
-                        message:"Updated successfully"
-                       })
+                    res.redirect('/modules')
                 }
             })
 

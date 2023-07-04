@@ -1,6 +1,11 @@
 var homecontroller = require('../controller/home');
 var Tools = require('../tools');
 module.exports = function (app) {
+
+    
+    app.route('/images/:key').get(homecontroller.showimage);
+
+
     app.route('/').get(Tools.isLoggedIn,homecontroller.home);
     app.route('/').post(Tools.isLoggedIn,homecontroller.home);
 
