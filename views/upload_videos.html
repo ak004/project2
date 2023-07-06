@@ -7,7 +7,7 @@
                <div class="card">
                    <div class="card-body">
                        <div class="d-flex flex-wrap align-items-center justify-content-between breadcrumb-content">
-                           <h5>Your modules</h5>
+                           <h5>Your Videos </h5>
                            <div class="d-flex flex-wrap align-items-center justify-content-between">
                             <form id="query_form" name="query_form" action="/modules" method="post" >
                                 <div class="form-group mb-3" style="margin-right: 20px; margin-top: 20px;">
@@ -38,7 +38,7 @@
                                 
                                </div>
                                <div class="pl-3 border-left btn-new">
-                                   <a href="#" class="btn btn-primary"   onclick="openmodel()" data-toggle="modal">New Module</a>
+                                   <a href="#" class="btn btn-primary"   onclick="openmodel()" data-toggle="modal">New Video</a>
                                </div>
                            </div>
                        </div>
@@ -49,7 +49,7 @@
 
        <%if(modules.length <= 0) {%>
        <center>
-        <h1 style="font-weight: bold; color: red;"> Please Create a Module first to upload videos under it</h1>
+        <h1 style="font-weight: bold; "> Please Create a Module first to upload videos under it</h1>
        </center>
        <%}else {%>
        <div id="grid" class="item-content animate__animated animate__fadeIn active" data-toggle-extra="tab-content">
@@ -91,50 +91,100 @@
 </div>
 
     <!-- Modal list start -->
-    <div class="modal fade" role="dialog" aria-modal="true" id="new-project-modal">
-        <div class="modal-dialog  modal-dialog-centered" role="document">
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-project-modal">
+        <div class="modal-dialog    modal-lg"  >
             <div class="modal-content">
                 <div class="modal-header d-block text-center pb-3 border-bttom">
-                    <h3 class="modal-title" id="exampleModalCenterTitle01">New Module</h3>
+                    <h3 class="modal-title" id="exampleModalCenterTitle01">New Video</h3>
                 </div>
                 <div class="modal-body">
+                    <form id="new_restuarant"   action="/upload_videos"  name="new_restuarant" method="POST" enctype="multipart/form-data">
                     <div class="row">
                         <div class="col-lg-12">
                             <input type="hidden" id="_id" name="_id" />
                             <p style="color: red;" id="mes"></p>
                             <div class="form-group mb-3">
-                                <label for="exampleInputText01" class="h5">Module Title*</label>
+                                <label for="exampleInputText01" class="h5">Video Title*</label>
                                 <input type="text" class="form-control" id="m_title" name="m_title" placeholder="Module Name">
                             </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="exampleInputText004" class="h5">Price*</label>
-                                <input type="number" class="form-control" id="price" value="">
-                            </div>                        
+                                <label for="exampleInputText2" class="h5">Module*</label>
+                                <select name="m_module" class="selectpicker form-control" id="m_module" data-style="py-0" required>
+                                    <option value="">Select a Module</option>
+                                    <% modules.forEach(function(md) { %>
+                                    <option value="<%=md._id%>"><%=md.title%></option>
+                                        <%})%>
+                                </select>
+                            </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
                                 <label for="exampleInputText2" class="h5">Status*</label>
-                                <select name="status" class="selectpicker form-control" id="status"  data-style="py-0">
+                                <select name="status" class="selectpicker form-control" id="status"  data-style="py-0" required>
                                     <option value="active">Active</option>
                                     <option value="suspended">Suspended</option>
                                 </select>
                             </div>
                         </div>
-
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
+                            <div class="form-group mb-3">
+                                <label for="exampleInputText004" class="h5">Module Sequence*</label>
+                                <input type="number" class="form-control" id="seq" name="seq">
+                            </div>                        
+                        </div>
+                        <div class="col-lg-4">
                             <div class="form-group mb-3">
                                 <label for="exampleInputText004" class="h5">Hours*</label>
                                 <input type="number" class="form-control" id="hours" name="hours">
                             </div>                        
                         </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
                             <div class="form-group mb-3">
                                 <label for="exampleInputText004" class="h5">Mintues*</label>
                                 <input type="number" class="form-control" id="min" name="min">
                             </div>                        
                         </div>
+
+                        <div class="col-lg-6">
+                            <label for="exampleInputText004" class="h5">Thumb Image*</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                   <span class="input-group-text">Upload</span>
+                                </div>
+                                <div class="custom-file">
+                                   <input type="file" class="custom-file-input"  name="res_image" id="imageUpload" accept=".png, .jpg, .jpeg" >
+                                   <label class="custom-file-label selected" style="  white-space: nowrap;  overflow: hidden; text-overflow: ellipsis; max-width: 100%;"  id="input_namee" ></label>
+                                </div>
+                             </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <label for="exampleInputText004" class="h5">Attachments</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                               <span class="input-group-text">Upload</span>
+                            </div>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" name="attachment" id="attachment" accept="application/pdf,application/msword,application/vnd.ms-excel">
+                               <label class="custom-file-label selected" style="  white-space: nowrap;  overflow: hidden; text-overflow: ellipsis; max-width: 100%;"  id="input_namee2" ></label>
+                            </div>
+                         </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <label for="exampleInputText004" class="h5"> Video*</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text">Upload</span>
+                        </div>
+                        <div class="custom-file">
+                           <input type="file" class="custom-file-input"  name="res_image" id="imageUpload" accept=".png, .jpg, .jpeg" >
+                           <label class="custom-file-label selected" style="  white-space: nowrap;  overflow: hidden; text-overflow: ellipsis; max-width: 100%;"  id="input_namee" ></label>
+                        </div>
+                     </div>
+            </div>
                        
                         <div class="col-lg-12">
                             <div class="form-group mb-3">
@@ -151,6 +201,7 @@
                             </div>
                         </div>
                     </div>
+                    </form>
                 </div>
             </div>
         </div>
