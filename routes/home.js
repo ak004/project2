@@ -40,6 +40,10 @@ module.exports = function (app) {
 
     app.route('/upload_videos').get(Tools.isLoggedIn,homecontroller.upload_videos);
     app.route('/upload_videos').post(Tools.isLoggedIn,homecontroller.upload_videos);
+    app.route('/save_video').post(Tools.isLoggedIn,homecontroller.save_video);
+    app.route('/initiateUpload').post(Tools.isLoggedIn,homecontroller.initiateUpload);
+    app.route('/upload').post(Tools.isLoggedIn,homecontroller.upload);
+    app.route('/completeUpload').post(Tools.isLoggedIn,homecontroller.completeUpload);
 
 
 }

@@ -2,6 +2,18 @@ const S3 = require('aws-sdk/clients/s3');
 const fs            = require('fs-extra')
 const AWS = require('aws-sdk');
 require('dotenv').config();
+const { Upload } = require("@aws-sdk/lib-storage");
+const { S3Client } = require("@aws-sdk/client-s3")
+
+
+const s3 = new S3Client({
+	region: process.env.REGION,
+	credentials: {
+		accessKeyId: process.env.ACCESS_KEY,
+		secretAccessKey: process.env.SECRET_KEY,
+	},
+});
+
 
 
  function  uploadtos3(file,name) {
@@ -40,6 +52,45 @@ s3.putObject(params, function (err, data) {
 });
 
 
+  }
+
+
+  function upload_large_files_tos3(file,name) {
+    // params for s3 upload
+    var datatt =  fs.createReadStream(file.path);
+    const params = {
+     Bucket: "mascuud-bucket",
+     Key: "tutoring_images/vids/"+`${Date.now().toString()}_${file.originalname}`,
+     Body: datatt,
+    }
+   // done few commit done and fixed 
+    try {
+     // upload file to s3 parallelly in chunks
+     // it supports min 5MB of file size
+     const uploadParallel = new Upload({
+      client: s3,
+      queueSize: 4, // optional concurrency configuration
+      partSize: 5542880, // optional size of each part
+      leavePartsOnError: false, // optional manually handle dropped parts
+      params,
+     })
+   
+     // checking progress of upload
+     uploadParallel.on("httpUploadProgress", progress => {
+      console.log(progress)
+     })
+   
+     // after completion of upload
+     uploadParallel.done().then(data => {
+      console.log("upload completed!", { data })
+      return res.json({ success: true, data: data.Location })
+     })
+    } catch (error) {
+     res.send({
+      success: false,
+      message: error.message,
+     })
+    }
   }
 
 
@@ -97,3 +148,4 @@ exports.isLoggedIn = (req, res, next) => {
   
   exports.uploadtos3 = uploadtos3;
   exports.getStreamImage = getStreamImage;
+  exports.upload_large_files_tos3 = upload_large_files_tos3;

@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+const cors = require('cors');
 var multer = require('multer');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -16,6 +17,14 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 bodyParser.json();
+
+app.use(bodyParser.json({ limit: '500mb' }));
+app.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
+
+// Set up CORS
+app.use(cors());
+
+
 app.use(express.static('./assets'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');

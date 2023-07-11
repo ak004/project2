@@ -5,9 +5,10 @@ const Modules = require('../model/modules');
 const Video = require('../model/video');
 const Catagories = require('../model/catagory')
 const saltRounds = 10;
+const fs            = require('fs-extra')
 const mongoose = require('mongoose');
 const Tools  = require('../tools.js');
-
+const AWS = require('aws-sdk');
 // const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
 
@@ -486,6 +487,180 @@ exports.upload_videos = function (req,res) {
             })
         })
     }
+}
+
+
+exports.save_video = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        console.log("the bodyyy", req.body);
+        var files =  req.files;
+        // console.log("the files: ", req.files);
+        if(req.body._id.length < 5) {
+            const groupedFiles = {};
+            files.forEach(file => {
+            const { fieldname } = file;
+            if (groupedFiles[fieldname]) {
+                groupedFiles[fieldname].push(file);
+            } else {
+                groupedFiles[fieldname] = [file];
+            }
+            }); 
+            var img = "";
+            var liner2 = "";
+            var attachments = [];
+            var vid = "/";
+            if(groupedFiles.res_image.length > 0 ) {
+                groupedFiles.res_image.forEach( async (imagess)  => {
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./images/" + image_name + '.jpg';
+                        liner2 = "images/" + image_name + '.jpg';
+                   
+                        //  Tools.uploadtos3(imagess,liner2);
+                        console.log("check----img--------", liner2);
+                        img = liner2
+                  })
+            }
+
+            if(groupedFiles.attachment && groupedFiles.attachment.length > 0 ) {
+                groupedFiles.attachment.forEach( async (imagess)  => {
+                    var att = "";
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./attachments/" + image_name + '.jpg';
+                        att = "attachments/" + image_name + '.jpg';
+                   
+                        //  Tools.uploadtos3(imagess,att);
+                        console.log("check-------attach-----", att);
+                        attachments.push(att);
+                  })
+            }
+
+            // if(groupedFiles.videos.length > 0 ) {
+            //     groupedFiles.videos.forEach( async (imagess)  => {
+            //         var url = "";
+            //             var image_name =tokenGenerator(29);
+            //             url = "./videos/" + image_name + '.jpg';
+            //             vid = "videos/" + image_name + '.jpg';
+                   
+            //              Tools.upload_large_files_tos3(imagess,liner2);
+            //             console.log("check----video--------", vid);
+            //       })
+            // }
+
+            var save_vid = new Video({
+                title: req.body.m_title,
+                discription: req.body.desc,
+                duration: req.body.dur,
+                user_id: req.session.user._id,
+                module_id: req.body.m_module,
+                path:vid,
+                status: req.body.status == "active" ? 2 : 0,
+                thumb_img:img,
+                attachments:attachments
+            });
+    
+            save_vid.save().then((svd) => {
+                if(svd) {
+                    res.redirect('/upload_videos')
+                }
+            })
+
+        }else {
+
+        }
+    } 
+}
+
+
+
+
+const s3 = new AWS.S3({
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY,
+    region: process.env.REGION,
+  });
+
+
+exports.initiateUpload = async function  (req,res) {
+
+    console.log("This is the firstone::",req.body);
+    try {
+        const { fileName } = req.body;
+        const params = {
+          Bucket: process.env.BUCKET_NAME,
+          Key: fileName,
+        };
+        const upload = await s3.createMultipartUpload(params).promise();
+        res.json({ uploadId: upload.UploadId });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error initializing upload' });
+      }
+}
+
+exports.upload = async function (req,res) {
+
+    console.log("This is the Secomdddd one::",req.body);
+    const { index, fileName } = req.body;
+    const file = req.files;
+    console.log("This is the Secomdddd one::",req.files);
+    var datatt =  fs.createReadStream(file[0].path);
+    const s3Params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: fileName,
+      Body: datatt,
+      PartNumber: Number(index) + 1,
+      UploadId: req.query.uploadId
+    };
+  
+    s3.uploadPart(s3Params, (err, data) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ success: false, message: 'Error uploading chunk' });
+      }
+  
+      return res.json({ success: true, message: 'Chunk uploaded successfully' });
+    });
+}
+
+exports.completeUpload = async function (req,res) {
+    console.log("This is the last oneee::",req.body);
+    const { fileName } = req.query;
+    const s3Params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: fileName,
+      UploadId: req.query.uploadId,
+    };
+  
+    s3.listParts(s3Params, (err, data) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ success: false, message: 'Error listing parts' });
+      }
+  
+      const parts = [];
+      data.Parts.forEach(part => {
+        parts.push({
+          ETag: part.ETag,
+          PartNumber: part.PartNumber
+        });
+      });
+  
+      s3Params.MultipartUpload = {
+        Parts: parts
+      };
+  
+      s3.completeMultipartUpload(s3Params, (err, data) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ success: false, message: 'Error completing upload' });
+        }
+  
+        console.log("data: ", data)
+        return res.json({ success: true, message: 'Upload complete', data: data.Location});
+      });
+    });
 }
 
 

@@ -19,6 +19,32 @@
       <!-- <script src="js/jquery/jquery.min.js"></script>
       <script src="js/jquery-ui/jquery-ui.min.js"></script> -->
     </head>
+    <style>
+        #progress-bar-container {
+  width: 200px;
+  height: 10px;
+  background-color: #ddd;
+  position: relative;
+}
+
+#progress-bar {
+  width: 0;
+  height: 100%;
+  background-color: red;
+  position: absolute;
+  animation: progressAnimation 2s infinite;
+}
+
+@keyframes progressAnimation {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+    </style>
   <body>
     <!-- loader Start -->
     <!-- <div id="loading">
