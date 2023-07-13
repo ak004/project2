@@ -195,6 +195,8 @@
                              <p style="color: red;">do not leave the page or refresh your page while uploading your video</p>
 
                           </div>
+                          <input type="hidden" id="_id2" name="_id2" />
+
                         <div class="col-lg-12">
                             <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-2">
                                 <input class="btn btn-primary btn-lg mr-3" id="subbtn" type="submit" value="Submit" />
@@ -216,16 +218,25 @@
                     <h3 class="modal-title" id="exampleModalCenterTitle01">Video Upload</h3>
                 </div>
                 <div class="modal-body">
+                    <div style="background-color: #f2f2f2; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; font-size: 14px; color: #555;">
+                        <ul style="list-style-type: disc; margin-left: 20px;">
+                          <li>Please do not leave or refresh the page while uploading.</li>
+                          <li>Note that you are not allowed to upload a file larget then 200mb.</li>
+                          <li>Uploading large files may take some time. Stay on this page until the upload is complete.</li>
+                          <li>Your patience is appreciated!</li>
+                        </ul>
+                      </div>
+                      
                     <div class="container my-5">
                         <div class="row justify-content-center">
-                          <div class="col-md-6">
+                          <div class="col-md-12">
                             <div class="card">
                               <div class="card-body">
-                                <h5 class="card-title mb-4">Send Files In Chunk to Backend</h5>
+                                <h5 class="card-title mb-4">Uplaod your video</h5>
                                 <form>
                                   <div class="form-group">
                                     <label for="fileInput">Select File:</label>
-                                    <input type="file" class="form-control-file" id="fileInput">
+                                    <input type="file" class="form-control-file" id="fileInput" accept="video/*">
                                   </div>
                                   <div class="progress mb-3">
                                     <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -246,8 +257,12 @@
 
 
 <script>
+            var id_for_vid = "";
 
 function uploadvid(id) {
+    id_for_vid = id;
+    $('#_id2').val(id).change();
+    console.log("the id is",id);
     $('#new_vid_modal').modal('show');
 }
 
@@ -263,11 +278,18 @@ function uploadvid(id) {
             // Listen for file input change event
             fileInput.addEventListener('change', () => {
             file = fileInput.files[0];
-            console.log("The file is:", file);
+            if (file.size > 200 * 1024 * 1024) {
+                // File size is greater than 200MB, reject it
+                file = "";
+                alert("File size exceeds 200MB. Please choose a smaller file.");
+                fileInput.value = ""; // Reset the file input field
+                return; // Exit the event listener
+            }
+            console.log("The file is:", file)
             fileName = Date.now().toString() + "_" + file.name;
             totalChunks = Math.ceil(file.size / CHUNK_SIZE);
             console.log("file ", file, "totalChunks ", totalChunks);
-            console.log("fileName ", fileName);
+            console.log("fileName ", id_for_vid);
             });
 
             // Listen for upload button click event
@@ -283,7 +305,7 @@ function uploadvid(id) {
                 const startTime = new Date();
 
                 // Initiate multipart upload
-                const requestBody = { fileName };
+                const requestBody = { fileName, id_for_vid };
                 console.log("requestBody ", requestBody);
                 const res = await fetch('/initiateUpload', {
                 method: 'POST',
@@ -306,6 +328,7 @@ function uploadvid(id) {
                 formData.append('totalChunks', totalChunks);
                 formData.append('fileName', fileName);
                 formData.append('file', chunk);
+                formData.append('_id', id_for_vid);
                 const uploadPromise = fetch(`/upload?uploadId=${uploadId}`, {
                     method: "POST",
                     body: formData,
@@ -321,7 +344,7 @@ function uploadvid(id) {
                 await Promise.all(uploadPromises);
 
                 // Complete multipart upload
-                const completeRes = await fetch(`/completeUpload?fileName=${fileName}&uploadId=${uploadId}`, { method: 'POST' });
+                const completeRes = await fetch(`/completeUpload?fileName=${fileName}&uploadId=${uploadId}&_id=${id_for_vid}`, { method: 'POST' });
                 const { success, data } = await completeRes.json();
                 console.log("file link: ", data);
                 if (!success) {
@@ -344,10 +367,11 @@ function uploadvid(id) {
 
             // update progress bar
             function updateProgressBar(progress) {
-            progressBar.style.width = progress + '%';
-            progressBar.textContent = progress + '%';
-            console.log("progress ", progress);
-            }
+                const $progressBar = $('.progress-bar');
+                $progressBar.css('width', progress + '%');
+                $progressBar.text(progress + '%');
+                console.log("progress ", progress);
+                }
 
             // Reset progress bar and file input
             function resetProgressBar() {

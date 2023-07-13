@@ -12,6 +12,9 @@ const AWS = require('aws-sdk');
 // const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
 
+const multer = require('multer');
+const upload = multer();
+
 
 var smtpConfig = {
     host: 'smtp.gmail.com',
@@ -38,6 +41,13 @@ tranporter.verify((error1, success) => {
 exports.showimage = function (req,res) {
 
     const readstreamm =  Tools.getStreamImage("tutoring_images/images/"+ req.params.key);
+    readstreamm.pipe(res)
+}
+
+
+exports.showvids = function (req,res) {
+
+    const readstreamm =  Tools.getStreamImage("vids/"+ req.params.key);
     readstreamm.pipe(res)
 }
 
@@ -467,6 +477,7 @@ exports.delete_modules = function (req,res) {
 }
 
 exports.upload_videos = function (req,res) {
+    
     if (Object.keys(req.body).length > 0) {
 
     }else {
@@ -589,7 +600,7 @@ exports.initiateUpload = async function  (req,res) {
         const { fileName } = req.body;
         const params = {
           Bucket: process.env.BUCKET_NAME,
-          Key: fileName,
+          Key: "vids/"+fileName,
         };
         const upload = await s3.createMultipartUpload(params).promise();
         res.json({ uploadId: upload.UploadId });
@@ -608,7 +619,7 @@ exports.upload = async function (req,res) {
     var datatt =  fs.createReadStream(file[0].path);
     const s3Params = {
       Bucket: process.env.BUCKET_NAME,
-      Key: fileName,
+      Key: "vids/"+fileName,
       Body: datatt,
       PartNumber: Number(index) + 1,
       UploadId: req.query.uploadId
@@ -619,7 +630,7 @@ exports.upload = async function (req,res) {
         console.log(err);
         return res.status(500).json({ success: false, message: 'Error uploading chunk' });
       }
-  
+      delete_uncert_data();
       return res.json({ success: true, message: 'Chunk uploaded successfully' });
     });
 }
@@ -629,7 +640,7 @@ exports.completeUpload = async function (req,res) {
     const { fileName } = req.query;
     const s3Params = {
       Bucket: process.env.BUCKET_NAME,
-      Key: fileName,
+      Key: "vids/"+fileName,
       UploadId: req.query.uploadId,
     };
   
@@ -658,11 +669,27 @@ exports.completeUpload = async function (req,res) {
         }
   
         console.log("data: ", data)
+        delete_uncert_data();
         return res.json({ success: true, message: 'Upload complete', data: data.Location});
       });
     });
 }
 
+
+
+
+function delete_uncert_data() {
+
+    const folderPath = './uploads'; 
+    fs.emptyDir(folderPath, (error) => {
+        if (error) {
+          console.error(error);
+          // Handle the error appropriately
+        } else {
+          console.log('Folder contents deleted successfully');
+        }
+      });
+} 
 
 tokenGenerator = function (length) {
     if (typeof length == "undefined") length = 32;
