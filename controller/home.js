@@ -528,7 +528,7 @@ exports.save_video = function (req,res) {
                         url = "./images/" + image_name + '.jpg';
                         liner2 = "images/" + image_name + '.jpg';
                    
-                        //  Tools.uploadtos3(imagess,liner2);
+                         Tools.uploadtos3(imagess,liner2);
                         console.log("check----img--------", liner2);
                         img = liner2
                   })
@@ -542,7 +542,7 @@ exports.save_video = function (req,res) {
                         url = "./attachments/" + image_name + '.jpg';
                         att = "attachments/" + image_name + '.jpg';
                    
-                        //  Tools.uploadtos3(imagess,att);
+                         Tools.uploadtos3(imagess,att);
                         console.log("check-------attach-----", att);
                         attachments.push(att);
                   })
@@ -586,12 +586,17 @@ exports.save_video = function (req,res) {
 
 
 
-
+AWS.config.update({
+    httpOptions: {
+      timeout: 600000, // Set timeout to 10 minutes (adjust as needed)
+    },
+  });
 const s3 = new AWS.S3({
     accessKeyId: process.env.ACCESS_KEY,
     secretAccessKey: process.env.SECRET_KEY,
     region: process.env.REGION,
   });
+
 
 
 exports.initiateUpload = async function  (req,res) {
@@ -606,7 +611,7 @@ exports.initiateUpload = async function  (req,res) {
         const upload = await s3.createMultipartUpload(params).promise();
         res.json({ uploadId: upload.UploadId });
       } catch (error) {
-        console.error(error);
+        console.error("first  error: ",error);
         res.status(500).json({ success: false, message: 'Error initializing upload' });
       }
 }
@@ -628,17 +633,23 @@ exports.upload = async function (req,res) {
   
     s3.uploadPart(s3Params, (err, data) => {
       if (err) {
-        console.log(err);
+        console.log("Second part uploading", err);
+        delete_uncert_data();
         return res.status(500).json({ success: false, message: 'Error uploading chunk' });
+      }else {
+        delete_uncert_data();
+        return res.json({ success: true, message: 'Chunk uploaded successfully' });
       }
-      delete_uncert_data();
-      return res.json({ success: true, message: 'Chunk uploaded successfully' });
+     
+
+    
     });
 }
 
 exports.completeUpload = async function (req,res) {
     console.log("This is the last oneee::",req.body);
-    const { fileName } = req.query;
+    console.log("This is the last oneee:: queryyy",req.query);
+    const { fileName,_id } = req.query;
     const s3Params = {
       Bucket: process.env.BUCKET_NAME,
       Key: "vids/"+fileName,
@@ -647,35 +658,97 @@ exports.completeUpload = async function (req,res) {
   
     s3.listParts(s3Params, (err, data) => {
       if (err) {
-        console.log(err);
+        console.log("last part err: " + err);
         return res.status(500).json({ success: false, message: 'Error listing parts' });
-      }
-  
-      const parts = [];
-      data.Parts.forEach(part => {
-        parts.push({
-          ETag: part.ETag,
-          PartNumber: part.PartNumber
+      }else {
+        const parts = [];
+        data.Parts.forEach(part => {
+          parts.push({
+            ETag: part.ETag,
+            PartNumber: part.PartNumber
+          });
         });
-      });
+    
+        s3Params.MultipartUpload = {
+          Parts: parts
+        };
+    
+        s3.completeMultipartUpload(s3Params, (err, data) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'Error completing upload' });
+          }
+    
+          console.log("data: ", data)
+          let loc = data.Location;
+              const decodedUrl = decodeURIComponent(loc);
+              const parts = decodedUrl.split('/');
+              const vidsIndex = parts.findIndex(part => part === 'vids');
+              const desiredString = parts.slice(vidsIndex).join('/');
+              console.log("the last out come is: ",desiredString);
   
-      s3Params.MultipartUpload = {
-        Parts: parts
-      };
+              Video.findOneAndUpdate({_id: _id}, {path: desiredString}).then((vid) => {
+                  if(vid) {
+                      delete_uncert_data();
+                      return res.json({ success: true, message: 'Upload complete', data: data.Location});
+                  }else {
+                      delete_uncert_data();
+                      return res.json({ success: false, message: 'Upload complete', data: data.Location});
+                  }
   
-      s3.completeMultipartUpload(s3Params, (err, data) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ success: false, message: 'Error completing upload' });
-        }
+              })
   
-        console.log("data: ", data)
-        delete_uncert_data();
-        return res.json({ success: true, message: 'Upload complete', data: data.Location});
-      });
+         
+        });
+      }
     });
 }
 
+
+exports.delete_video = async function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Video.findOne({_id:req.body._id}).then((vidss) => {
+            if (vidss) {
+                (async () => {
+                  const deleteee = await Tools.deleteImageFromS3(vidss.path);
+                  if(deleteee) {
+                    Tools.deleteImageFromS3("tutoring_images/"+ vidss.thumb_img);
+                    if(vidss.attachments.length > 0) {
+                        for(var i = 0; i < vidss.attachments.length; i++) {
+                            Tools.deleteImageFromS3("tutoring_images/"+ vidss.attachments[i]);
+                        }
+                    }
+                    Video.deleteOne({_id:vidss._id}).then((del) => {
+                        if(del) {
+                            console.log("success full delete a image")
+                            res.json({
+                                success:true,
+                                message: "success"
+                            })
+                        }else {
+                            console.log("failur ")
+                            res.json({
+                                success:false,
+                                message: "error"
+                            })
+                        }
+                    })
+                  }else {
+                    console.log("failur ")
+                    res.json({
+                        success:false,
+                        message: "error"
+                    })
+                  }
+
+                })();
+              } else {
+                // Handle the case when vidss is falsy (e.g., not defined or null)
+              }
+            
+        })
+    }
+}
 
 
 

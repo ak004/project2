@@ -49,6 +49,10 @@ userschema = new Schema({
         type: Number,
         default: 0
     },
+    likes: {
+        type: Number,
+        default: 0
+    },
     role: {
         type: String,
         default: "user"

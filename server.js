@@ -38,6 +38,7 @@ app.use(session({
 app.use('/images',express.static('images'))
 
 require("./routes/home")(app);
+require("./routes/apis")(app);
 
 const db = "mongodb://0.0.0.0:27017/project2"
 

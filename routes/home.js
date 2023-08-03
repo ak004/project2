@@ -44,6 +44,7 @@ module.exports = function (app) {
     app.route('/initiateUpload').post(Tools.isLoggedIn,homecontroller.initiateUpload);
     app.route('/upload').post(Tools.isLoggedIn,homecontroller.upload);
     app.route('/completeUpload').post(Tools.isLoggedIn,homecontroller.completeUpload);
+    app.route('/delete_video').post(Tools.isLoggedIn,homecontroller.delete_video);
 
 
 }

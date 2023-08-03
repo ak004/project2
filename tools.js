@@ -54,6 +54,39 @@ s3.putObject(params, function (err, data) {
 
   }
 
+  async function deleteImageFromS3(imagePath) {
+    var params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: imagePath,
+    };
+  
+    try {
+      AWS.config.update({
+        accessKeyId: process.env.ACCESS_KEY,
+        secretAccessKey: process.env.SECRET_KEY,
+        
+      });
+      AWS.config.update({region:'eu-north-1'});
+      var s3 = new AWS.S3();
+      
+      AWS.config.update({region:'eu-north-1'});
+      var s3 = new AWS.S3();
+      //  s3.DeleteObject(params).promise();
+       s3.deleteObject(params, function (err, data) {
+        if(err) {
+          return false;
+        }else {
+          return true;
+        }
+       })
+      console.log("Object deleted successfully");
+      return true; // Indicate success
+    } catch (err) {
+      console.log("Error deleting object: ", err);
+      return false; // Indicate failure
+    }
+  }
+
 
   function upload_large_files_tos3(file,name) {
     // params for s3 upload
@@ -149,3 +182,4 @@ exports.isLoggedIn = (req, res, next) => {
   exports.uploadtos3 = uploadtos3;
   exports.getStreamImage = getStreamImage;
   exports.upload_large_files_tos3 = upload_large_files_tos3;
+  exports.deleteImageFromS3 = deleteImageFromS3;
