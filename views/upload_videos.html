@@ -324,28 +324,41 @@ function uploadvid(id) {
                 const uploadPromises = [];
                 let uploadedChunks = 0;
                 let start = 0, end;
-                for (let i = 0; i < totalChunks; i++) {
-                end = start + CHUNK_SIZE;
-                const chunk = file.slice(start, end);
-                const formData = new FormData();
-                formData.append('index', i);
-                formData.append('totalChunks', totalChunks);
-                formData.append('fileName', fileName);
-                formData.append('file', chunk);
-                formData.append('_id', id_for_vid);
-                const uploadPromise = fetch(`/upload?uploadId=${uploadId}`, {
-                    method: "POST",
-                    body: formData,
-                }).then(() => {
-                    uploadedChunks++;
-                    const progress = Math.floor((uploadedChunks / totalChunks) * 100);
-                    updateProgressBar(progress);
-                });
-                uploadPromises.push(uploadPromise);
-                start = end;
-                }
-
-                await Promise.all(uploadPromises);
+                uploadChunks();
+                async function uploadChunks() {
+                    for (let i = 0; i < totalChunks; i++) {
+                        console.log("the loop count: ", i);
+                        end = start + CHUNK_SIZE;
+                        const chunk = file.slice(start, end);
+                        const formData = new FormData();
+                        formData.append('index', i);
+                        formData.append('totalChunks', totalChunks);
+                        formData.append('fileName', fileName);
+                        formData.append('file', chunk);
+                        formData.append('_id', id_for_vid);
+                        try {
+                            const response = await fetch(`/upload?uploadId=${uploadId}`, {
+                                method: "POST",
+                                body: formData,
+                            });
+                            if (response.ok) {
+                                const responseData = await response.json(); // Parse JSON response
+                                console.log(responseData);
+                                uploadedChunks++;
+                                const progress = Math.floor((uploadedChunks / totalChunks) * 100);
+                                updateProgressBar(progress);
+                            } else {
+                                const responseData = await response.json(); // Parse JSON response
+                                console.log(responseData);
+                                console.log("there is error:  the response is: ",response);
+                                // Handle error if needed
+                            }
+                        } catch (error) {
+                            // Handle fetch error if needed
+                        }
+                        start = end;
+                    }
+                    await Promise.all(uploadPromises);
                 var idds =  $('#vid_iddd').val();
                 // Complete multipart upload
                 const completeRes = await fetch(`/completeUpload?fileName=${fileName}&uploadId=${uploadId}&_id=${id_for_vid}`, { method: 'POST' });
@@ -360,7 +373,10 @@ function uploadvid(id) {
                 const timeElapsed = (endTime - startTime) / 1000;
                 console.log('Time elapsed:', timeElapsed, 'seconds');
                 alert('File uploaded successfully');
+                
                 resetProgressBar();
+                }
+            
             } catch (err) {
                 console.log(err);
                 alert('Error uploading file');

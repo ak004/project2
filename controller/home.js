@@ -615,7 +615,7 @@ exports.initiateUpload = async function  (req,res) {
         res.status(500).json({ success: false, message: 'Error initializing upload' });
       }
 }
-
+ 
 exports.upload = async function (req,res) {
 
     console.log("This is the Secomdddd one::",req.body);
@@ -659,7 +659,7 @@ exports.completeUpload = async function (req,res) {
     s3.listParts(s3Params, (err, data) => {
       if (err) {
         console.log("last part err: " + err);
-        return res.status(500).json({ success: false, message: 'Error listing parts' });
+        return res.status(500).json({ success: false, message: 'Error listing pa    rts' });
       }else {
         const parts = [];
         data.Parts.forEach(part => {
