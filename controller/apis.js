@@ -69,7 +69,43 @@ exports.get_selected_cat = function (req,res) {
 exports.trending_course = function (req,res) {
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
-            Modules.find({status:{$gt: 1}}).sort({likes: -1}).limit(4).then((course) => {
+            Modules.aggregate([
+                {
+                    $match: {
+                        status:{$gt: 1}
+                    }
+                },
+                {
+                    $lookup:{
+                        from: "users",
+                        localField: "user_id",
+                        foreignField: "_id",
+                        as: "mentor"
+                    }
+                },
+                {
+                    $unwind: "$mentor"
+                },
+                {
+                    $lookup:{
+                        from: "catagories",
+                        localField: "catagory_id",
+                        foreignField: "_id",
+                        as: "cat"
+                    }
+                },
+                {
+                    $unwind: "$cat"
+                } ,
+                {
+                    $sort: {
+                        likes:-1
+                    }
+                },
+                {
+                    $limit:  4
+                }
+            ]).then((course) => {
                 if(course.length > 0) {
                     res.json({
                         success:true,
@@ -186,11 +222,54 @@ exports.get_course_details = function (req,res) {
             Modules.aggregate([
                 {
                     $match: {
-                        _id:  new  mongoose.Types.ObjectId(req.body.course_id)
+                        _id: new  mongoose.Types.ObjectId(req.body.course_id)
                     }
                 },
-                
-            ])
+                {
+                  $lookup: {
+                    from: "videos",
+                    localField: "_id",
+                    foreignField: "module_id",
+                    as: "videos"
+                  }
+                },
+                {
+                  $project: {
+                    _id: 1,
+                    title: 1,
+                    discription:1,
+                      image:1,
+                      likes:1,
+                      
+                    no_of_vids: { $size: "$videos" },
+                    total_duration: {
+                      $reduce: {
+                        input: "$videos",
+                        initialValue: 0,
+                        in: { $add: ["$$value", "$$this.duration"] }
+                      }
+                    },
+                    attachments_count: {
+                      $sum: { $map: { input: "$videos.attachments", as: "attach", in: { $size: "$$attach" } } }
+                    }
+                  }
+                }
+              ]).then((data) => {
+                if(data.length > 0) {
+                    res.json({
+                        success:true,
+                        message: "Successfuly found the data",
+                        record: {
+                            data:data
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        message: "Couldnt any data"
+                    })
+                }
+              })
         }else {
             res.json({
                 success:false,

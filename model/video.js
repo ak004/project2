@@ -12,8 +12,8 @@ videoSchema = new Schema({
         default: ""
     },
     duration: {
-        type: String,
-        default: ""
+        type: Number,
+        default: 0
     },
     thumb_img: {
         type: String,
