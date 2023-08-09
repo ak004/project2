@@ -47,6 +47,7 @@ s3.putObject(params, function (err, data) {
       return "";
   }else {
     delete_uncert_data();
+    console.log("uplaoding........");
     return the_namewithextenstion;
   }
 });
@@ -68,7 +69,7 @@ s3.putObject(params, function (err, data) {
       });
       AWS.config.update({region:'eu-north-1'});
       var s3 = new AWS.S3();
-      
+
       AWS.config.update({region:'eu-north-1'});
       var s3 = new AWS.S3();
       //  s3.DeleteObject(params).promise();
@@ -133,7 +134,7 @@ s3.putObject(params, function (err, data) {
       secretAccessKey: process.env.SECRET_KEY,
       
     });
-    AWS.config.update({region:'eu-north-1'});
+    // AWS.config.update({region:'eu-north-1'});
     var s3 = new AWS.S3();
 
     const downloadParmams = {
