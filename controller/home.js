@@ -5,11 +5,15 @@ const Modules = require('../model/modules');
 const Video = require('../model/video');
 const Catagories = require('../model/catagory')
 const saltRounds = 10;
+const fs            = require('fs-extra')
 const mongoose = require('mongoose');
 const Tools  = require('../tools.js');
-
+const AWS = require('aws-sdk');
 // const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
+
+const multer = require('multer');
+const upload = multer();
 
 
 var smtpConfig = {
@@ -38,6 +42,14 @@ exports.showimage = function (req,res) {
 
     const readstreamm =  Tools.getStreamImage("tutoring_images/images/"+ req.params.key);
     readstreamm.pipe(res)
+}
+
+
+exports.showvids = function (req,res) {
+
+    const readstreamm =  Tools.getStreamImage("vids/" + req.params.key);
+    res.setHeader('Content-Type', 'video/mp4');
+    readstreamm.pipe(res);
 }
 
 
@@ -466,6 +478,7 @@ exports.delete_modules = function (req,res) {
 }
 
 exports.upload_videos = function (req,res) {
+    
     if (Object.keys(req.body).length > 0) {
 
     }else {
@@ -488,6 +501,269 @@ exports.upload_videos = function (req,res) {
     }
 }
 
+
+exports.save_video = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        console.log("the bodyyy", req.body);
+        var files =  req.files;
+        // console.log("the files: ", req.files);
+        if(req.body._id.length < 5) {
+            const groupedFiles = {};
+            files.forEach(file => {
+            const { fieldname } = file;
+            if (groupedFiles[fieldname]) {
+                groupedFiles[fieldname].push(file);
+            } else {
+                groupedFiles[fieldname] = [file];
+            }
+            }); 
+            var img = "";
+            var liner2 = "";
+            var attachments = [];
+            var vid = "/";
+            if(groupedFiles.res_image.length > 0 ) {
+                groupedFiles.res_image.forEach( async (imagess)  => {
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./images/" + image_name + '.jpg';
+                        liner2 = "images/" + image_name + '.jpg';
+                   
+                         Tools.uploadtos3(imagess,liner2);
+                        console.log("check----img--------", liner2);
+                        img = liner2
+                  })
+            }
+
+            if(groupedFiles.attachment && groupedFiles.attachment.length > 0 ) {
+                groupedFiles.attachment.forEach( async (imagess)  => {
+                    var att = "";
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./attachments/" + image_name + '.jpg';
+                        att = "attachments/" + image_name + '.jpg';
+                   
+                         Tools.uploadtos3(imagess,att);
+                        console.log("check-------attach-----", att);
+                        attachments.push(att);
+                  })
+            }
+
+            // if(groupedFiles.videos.length > 0 ) {
+            //     groupedFiles.videos.forEach( async (imagess)  => {
+            //         var url = "";
+            //             var image_name =tokenGenerator(29);
+            //             url = "./videos/" + image_name + '.jpg';
+            //             vid = "videos/" + image_name + '.jpg';
+                   
+            //              Tools.upload_large_files_tos3(imagess,liner2);
+            //             console.log("check----video--------", vid);
+            //       })
+            // }
+
+            var save_vid = new Video({
+                title: req.body.m_title,
+                discription: req.body.desc,
+                duration: req.body.dur,
+                user_id: req.session.user._id,
+                module_id: req.body.m_module,
+                path:vid,
+                status: req.body.status == "active" ? 2 : 0,
+                thumb_img:img,
+                attachments:attachments
+            });
+    
+            save_vid.save().then((svd) => {
+                if(svd) {
+                    res.redirect('/upload_videos')
+                }
+            })
+
+        }else {
+
+        }
+    } 
+}
+
+
+
+AWS.config.update({
+    httpOptions: {
+      timeout: 600000, // Set timeout to 10 minutes (adjust as needed)
+    },
+  });
+const s3 = new AWS.S3({
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY,
+    region: process.env.REGION,
+  });
+
+
+
+exports.initiateUpload = async function  (req,res) {
+
+    console.log("This is the firstone::",req.body);
+    try {
+        const { fileName } = req.body;
+        const params = {
+          Bucket: process.env.BUCKET_NAME,
+          Key: "vids/"+fileName,
+        };
+        const upload = await s3.createMultipartUpload(params).promise();
+        res.json({ uploadId: upload.UploadId });
+      } catch (error) {
+        console.error("first  error: ",error);
+        res.status(500).json({ success: false, message: 'Error initializing upload' });
+      }
+}
+ 
+exports.upload = async function (req,res) {
+
+    console.log("This is the Secomdddd one::",req.body);
+    const { index, fileName } = req.body;
+    const file = req.files;
+    console.log("This is the Secomdddd one::",req.files);
+    var datatt =  fs.createReadStream(file[0].path);
+    const s3Params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: "vids/"+fileName,
+      Body: datatt,
+      PartNumber: Number(index) + 1,
+      UploadId: req.query.uploadId
+    };
+  
+    s3.uploadPart(s3Params, (err, data) => {
+      if (err) {
+        console.log("Second part uploading", err);
+        delete_uncert_data();
+        return res.status(500).json({ success: false, message: 'Error uploading chunk' });
+      }else {
+        delete_uncert_data();
+        return res.json({ success: true, message: 'Chunk uploaded successfully' });
+      }
+     
+
+    
+    });
+}
+
+exports.completeUpload = async function (req,res) {
+    console.log("This is the last oneee::",req.body);
+    console.log("This is the last oneee:: queryyy",req.query);
+    const { fileName,_id } = req.query;
+    const s3Params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: "vids/"+fileName,
+      UploadId: req.query.uploadId,
+    };
+  
+    s3.listParts(s3Params, (err, data) => {
+      if (err) {
+        console.log("last part err: " + err);
+        return res.status(500).json({ success: false, message: 'Error listing pa    rts' });
+      }else {
+        const parts = [];
+        data.Parts.forEach(part => {
+          parts.push({
+            ETag: part.ETag,
+            PartNumber: part.PartNumber
+          });
+        });
+    
+        s3Params.MultipartUpload = {
+          Parts: parts
+        };
+    
+        s3.completeMultipartUpload(s3Params, (err, data) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'Error completing upload' });
+          }
+    
+          console.log("data: ", data)
+          let loc = data.Location;
+              const decodedUrl = decodeURIComponent(loc);
+              const parts = decodedUrl.split('/');
+              const vidsIndex = parts.findIndex(part => part === 'vids');
+              const desiredString = parts.slice(vidsIndex).join('/');
+              console.log("the last out come is: ",desiredString);
+  
+              Video.findOneAndUpdate({_id: _id}, {path: desiredString}).then((vid) => {
+                  if(vid) {
+                      delete_uncert_data();
+                      return res.json({ success: true, message: 'Upload complete', data: data.Location});
+                  }else {
+                      delete_uncert_data();
+                      return res.json({ success: false, message: 'Upload complete', data: data.Location});
+                  }
+  
+              })
+  
+         
+        });
+      }
+    });
+}
+
+
+exports.delete_video = async function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Video.findOne({_id:req.body._id}).then((vidss) => {
+            if (vidss) {
+                (async () => {
+                  const deleteee = await Tools.deleteImageFromS3(vidss.path);
+                  if(deleteee) {
+                    Tools.deleteImageFromS3("tutoring_images/"+ vidss.thumb_img);
+                    if(vidss.attachments.length > 0) {
+                        for(var i = 0; i < vidss.attachments.length; i++) {
+                            Tools.deleteImageFromS3("tutoring_images/"+ vidss.attachments[i]);
+                        }
+                    }
+                    Video.deleteOne({_id:vidss._id}).then((del) => {
+                        if(del) {
+                            console.log("success full delete a image")
+                            res.json({
+                                success:true,
+                                message: "success"
+                            })
+                        }else {
+                            console.log("failur ")
+                            res.json({
+                                success:false,
+                                message: "error"
+                            })
+                        }
+                    })
+                  }else {
+                    console.log("failur ")
+                    res.json({
+                        success:false,
+                        message: "error"
+                    })
+                  }
+
+                })();
+              } else {
+                // Handle the case when vidss is falsy (e.g., not defined or null)
+              }
+            
+        })
+    }
+}
+
+
+
+function delete_uncert_data() {
+
+    const folderPath = './uploads'; 
+    fs.emptyDir(folderPath, (error) => {
+        if (error) {
+          console.error(error);
+          // Handle the error appropriately
+        } else {
+          console.log('Folder contents deleted successfully');
+        }
+      });
+} 
 
 tokenGenerator = function (length) {
     if (typeof length == "undefined") length = 32;

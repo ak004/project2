@@ -12,10 +12,10 @@ videoSchema = new Schema({
         default: ""
     },
     duration: {
-        type: String,
-        default: ""
+        type: Number,
+        default: 0
     },
-    notes: {
+    thumb_img: {
         type: String,
         default: ""
     },
@@ -35,6 +35,7 @@ videoSchema = new Schema({
     type: String,
     required: true
    },
+   attachments: [],
     created_at: {
         type: Date,
         default: Date.now

@@ -4,7 +4,7 @@ module.exports = function (app) {
 
     
     app.route('/images/:key').get(homecontroller.showimage);
-
+    app.route('/vids/:key').get(homecontroller.showvids);
 
     app.route('/').get(Tools.isLoggedIn,homecontroller.home);
     app.route('/').post(Tools.isLoggedIn,homecontroller.home);
@@ -40,6 +40,11 @@ module.exports = function (app) {
 
     app.route('/upload_videos').get(Tools.isLoggedIn,homecontroller.upload_videos);
     app.route('/upload_videos').post(Tools.isLoggedIn,homecontroller.upload_videos);
+    app.route('/save_video').post(Tools.isLoggedIn,homecontroller.save_video);
+    app.route('/initiateUpload').post(Tools.isLoggedIn,homecontroller.initiateUpload);
+    app.route('/upload').post(Tools.isLoggedIn,homecontroller.upload);
+    app.route('/completeUpload').post(Tools.isLoggedIn,homecontroller.completeUpload);
+    app.route('/delete_video').post(Tools.isLoggedIn,homecontroller.delete_video);
 
 
 }
