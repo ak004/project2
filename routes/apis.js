@@ -7,4 +7,5 @@ module.exports = function (app) {
     app.route('/api/get_top_mentors').post(apis.get_top_mentors);
     app.route('/api/get_selected_course').post(apis.get_selected_course);
     app.route('/api/get_course_details').post(apis.get_course_details);
+    app.route('/api/get_vid_details').post(apis.get_vid_details);
 }

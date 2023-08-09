@@ -46,7 +46,7 @@ exports.showimage = function (req,res) {
 
 
 exports.showvids = function (req,res) {
-
+console.log("thhe valuere", req.params.key)
     const readstreamm =  Tools.getStreamImage("vids/" + req.params.key);
     res.setHeader('Content-Type', 'video/mp4');
     readstreamm.pipe(res);

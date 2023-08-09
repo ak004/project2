@@ -18,12 +18,22 @@ exports.get_cat = function (req,res) {
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
             Catagories.find({status:{$gt: 1}}).then((cat) => {
-                if(cat) {
+                if(cat.length > 0) {
+                    console.log("reached herer ",cat.length);
                     res.json({
                         success:true,
                         message: "Successfuly found the data",
                         record: {
                             data:cat
+                        }
+                    })
+                }else {
+                    console.log("NOOOOOOOOOOOOOOO cat");
+                    res.json({
+                        success:false,
+                        message: "Couldnt find the data",
+                        record: {
+                            data:[]
                         }
                     })
                 }
@@ -240,6 +250,7 @@ exports.get_course_details = function (req,res) {
                     discription:1,
                       image:1,
                       likes:1,
+                      videos:1,
                       
                     no_of_vids: { $size: "$videos" },
                     total_duration: {
@@ -270,6 +281,55 @@ exports.get_course_details = function (req,res) {
                     })
                 }
               })
+        }else {
+            res.json({
+                success:false,
+                message: "Couldnt find user try login again"
+            })
+        }
+    })
+}
+
+
+exports.get_vid_details = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            console.log("the vids", req.body);
+            Video.aggregate([
+                {
+                    $match: {
+                        _id: new  mongoose.Types.ObjectId(req.body.vid_id)
+                    }
+                },
+                {
+                    $lookup:{
+                        from: "users",
+                        localField: "user_id",
+                        foreignField: "_id",
+                        as: "mentor"
+                    }
+                },
+                {
+                    $unwind: "$mentor"
+                },
+
+            ]).then((vid) => {
+                console.log("the vids", vid.length);
+                if(vid.length > 0) {
+                    res.json({
+                        success:true,
+                        message: "Successfuly found the data",
+                        record: {
+                            data:vid
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        message: "Couldnt find any lesson try again"
+                    })
+                }
+            })
         }else {
             res.json({
                 success:false,

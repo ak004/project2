@@ -135,6 +135,8 @@ s3.putObject(params, function (err, data) {
       
     });
     // AWS.config.update({region:'eu-north-1'});
+
+    console.log("the filef keuu",filekey);
     var s3 = new AWS.S3();
 
     const downloadParmams = {
