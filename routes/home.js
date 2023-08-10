@@ -5,6 +5,7 @@ module.exports = function (app) {
     
     app.route('/images/:key').get(homecontroller.showimage);
     app.route('/vids/:key').get(homecontroller.showvids);
+    app.route('/attachments/:key').get(homecontroller.showattachement);
 
     app.route('/').get(Tools.isLoggedIn,homecontroller.home);
     app.route('/').post(Tools.isLoggedIn,homecontroller.home);

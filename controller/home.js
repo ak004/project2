@@ -11,10 +11,10 @@ const Tools  = require('../tools.js');
 const AWS = require('aws-sdk');
 // const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
-
+const mime = require('mime');
 const multer = require('multer');
 const upload = multer();
-
+const path = require('path');
 
 var smtpConfig = {
     host: 'smtp.gmail.com',
@@ -51,6 +51,24 @@ console.log("thhe valuere", req.params.key)
     res.setHeader('Content-Type', 'video/mp4');
     readstreamm.pipe(res);
 }
+
+exports.showattachement = function (req,res) {
+    console.log("the value", req.params.key);
+
+    const filePath = "tutoring_images/attachments/" + req.params.key;
+    
+    // Determine the MIME type based on the file extension
+    const fileExtension = path.extname(filePath).toLowerCase();
+    const mimeType = mime.getType(fileExtension) || 'application/octet-stream';
+
+    // Set the appropriate Content-Type header
+    res.setHeader('Content-Type', mimeType);
+
+    // Stream the file content to the response
+    const readstreamm = Tools.getStreamImage(filePath);
+    readstreamm.pipe(res);
+    }
+    
 
 
 exports.home = function (req,res) {
@@ -538,9 +556,11 @@ exports.save_video = function (req,res) {
                 groupedFiles.attachment.forEach( async (imagess)  => {
                     var att = "";
                     var url = "";
+                    var  originalname =  imagess.originalname;
+                    var extention = originalname.split(".")[1];
                         var image_name =tokenGenerator(29);
-                        url = "./attachments/" + image_name + '.jpg';
-                        att = "attachments/" + image_name + '.jpg';
+                        url = "./attachments/" + image_name + '.'+extention;
+                        att = "attachments/" + image_name + '.' + extention;
                    
                          Tools.uploadtos3(imagess,att);
                         console.log("check-------attach-----", att);
