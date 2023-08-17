@@ -15,6 +15,7 @@ const multer = require('multer');
 
 
 exports.get_cat = function (req,res) {
+    console.log("yep the route that the app is calling CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
             Catagories.find({status:{$gt: 1}}).then((cat) => {
@@ -251,6 +252,7 @@ exports.get_course_details = function (req,res) {
                       image:1,
                       likes:1,
                       videos:1,
+                      amount:"$price",
                       
                     no_of_vids: { $size: "$videos" },
                     total_duration: {

@@ -268,7 +268,7 @@ exports.catagories = function (req,res) {
         if(req.session.user.role == "user") {
             filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
          }
-         Catagories.aggregate([filter]).then((mod) => {
+         Catagories.find({}).then((mod) => {
                 res.render("course_catagories", {
                     user:req.session.user,
                     data:mod,
