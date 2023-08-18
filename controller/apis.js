@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer');
 const Modules = require('../model/modules');
 const Video = require('../model/video');
 const Catagories = require('../model/catagory')
+const Bought_course = require('../model/bought_course')
 const saltRounds = 10;
 const fs            = require('fs-extra')
 const mongoose = require('mongoose');
@@ -15,7 +16,7 @@ const multer = require('multer');
 
 
 exports.get_cat = function (req,res) {
-    console.log("yep the route that the app is calling CORRECT")
+    console.log("yep the route that the app is calling is CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
             Catagories.find({status:{$gt: 1}}).then((cat) => {
@@ -40,6 +41,7 @@ exports.get_cat = function (req,res) {
                 }
             })
         }else {
+            console.log("the user does not exits");
             res.json({
                 success:false,
                 message: "Couldnt find user try login again"
@@ -201,23 +203,30 @@ exports.get_top_mentors = function (req,res) {
 exports.get_selected_course = function (req,res) {
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
-            var arr1 = req.body._ids;
-            var ids = [];
-            arr1.forEach(function(item) {
-                
-                ids.push( new  mongoose.Types.ObjectId(item));
-              });
-              Modules.find({status:{$gt: 1}, _id: {$in: ids}}).then((cat) => {
-                if(cat) {
+            console.log("the is lists of_ids", req.body);
+            var idsString = req.body._ids;
+
+            if(idsString.length > 10) {
+            var idValues = idsString.substring(1, idsString.length - 1).split(', ');
+            var formattedIds = idValues.map(id => new mongoose.Types.ObjectId(id));
+            Modules.find({ status: { $gt: 1 }, _id: { $in: formattedIds } }).then((cat) => {
+                if (cat.length > 0) {
                     res.json({
-                        success:true,
-                        message: "Successfuly found the data",
+                        success: true,
+                        message: "Successfully found the data",
                         record: {
-                            data:cat
+                            data: cat
                         }
-                    })
+                    });
                 }
-            })
+            });
+            }else {
+                res.json({
+                    success:false,
+                    message: "Couldnt find any course"
+                })
+            }
+         
         }else {
             res.json({
                 success:false,
@@ -329,6 +338,101 @@ exports.get_vid_details = function (req,res) {
                     res.json({
                         success:false,
                         message: "Couldnt find any lesson try again"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message: "Couldnt find user try login again"
+            })
+        }
+    })
+}
+
+exports.buy_course = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Modules.findOne({_id:req.body.course_id, status: {$gt:1}}).then((mod) => {
+                if(mod) {
+                    if(mod.price == Number(req.body.amount)) {
+                        var buy = new Bought_course({
+                            title: mod.title,
+                            user_name:user.user_name,
+                            price: Number(req.body.amount),
+                            user_id:user._id,
+                            module_id:mod._id
+                        })
+                        buy.save().then((svd) => {
+                            if(svd) {
+                                res.json({
+                                    success:true,
+                                    message:"Congratuatuion you have Successfully Bought this course"
+                                })
+                            }else {
+                                res.json({
+                                    success:false,
+                                    message:"Something went wrong Contact your Admin"
+                                })
+                            }
+                        })
+                    }else {
+                        req.json({
+                            success:false,
+                            message:"The paid amount and the module amount dont match"
+                        })
+                    }
+                }else {
+                    req.json({
+                        success:false,
+                        message:"couldnt find the course"
+                    })
+                }
+            })
+        }else {
+            req.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+exports.ongoing_and_completed_course = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            var state = req.body.state == "comp" ? 1: 0;
+            Bought_course.aggregate([
+
+                {
+                    $match: {user_id:user._id, completd_course:state }
+                },
+                {
+                    $lookup:{
+                        from: "modules",
+                        localField: "module_id",
+                        foreignField: "_id",
+                        as: "course"
+                    }
+                },
+                {
+                    $unwind: "$course"
+                },
+            ]).then((course) => {
+                if(course.length > 0) {
+                    res.json({
+                        success:true,
+                        record: {
+                            data:course
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        record:{
+                            data:[]
+                        },
+                        message: "No ongoing course found"
                     })
                 }
             })
