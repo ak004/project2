@@ -278,13 +278,28 @@ exports.get_course_details = function (req,res) {
                 }
               ]).then((data) => {
                 if(data.length > 0) {
-                    res.json({
-                        success:true,
-                        message: "Successfuly found the data",
-                        record: {
-                            data:data
+                    Bought_course.findOne({user_id:user._id, module_id: new  mongoose.Types.ObjectId(req.body.course_id)}).then((bought) => {
+                        if(bought) {
+                            res.json({
+                                success:true,
+                                message: "Successfuly found the data",
+                                record: {
+                                    data:data,
+                                    bought:true
+                                }
+                            })
+                        }else{
+                            res.json({
+                                success:true,
+                                message: "Successfuly found the data",
+                                record: {
+                                    data:data,
+                                    bought:false
+                                }
+                            })
                         }
                     })
+                  
                 }else {
                     res.json({
                         success:false,
@@ -356,41 +371,50 @@ exports.buy_course = function (req,res) {
             Modules.findOne({_id:req.body.course_id, status: {$gt:1}}).then((mod) => {
                 if(mod) {
                     if(mod.price == Number(req.body.amount)) {
-                        var buy = new Bought_course({
-                            title: mod.title,
-                            user_name:user.user_name,
-                            price: Number(req.body.amount),
-                            user_id:user._id,
-                            module_id:mod._id
-                        })
-                        buy.save().then((svd) => {
-                            if(svd) {
-                                res.json({
-                                    success:true,
-                                    message:"Congratuatuion you have Successfully Bought this course"
+                        Bought_course.findOne({user_id:user._id,module_id:mod._id}).then((already_bought) => {
+                            if(!already_bought) {
+                                var buy = new Bought_course({
+                                    title: mod.title,
+                                    user_name:user.user_name,
+                                    price: Number(req.body.amount),
+                                    user_id:user._id,
+                                    module_id:mod._id
+                                })
+                                buy.save().then((svd) => {
+                                    if(svd) {
+                                        res.json({
+                                            success:true,
+                                            message:"Congratulation you have Successfully Bought this course"
+                                        })
+                                    }else {
+                                        res.json({
+                                            success:false,
+                                            message:"Something went wrong Contact your Admin"
+                                        })
+                                    }
                                 })
                             }else {
                                 res.json({
                                     success:false,
-                                    message:"Something went wrong Contact your Admin"
+                                    message:"You already bought this course"
                                 })
                             }
                         })
                     }else {
-                        req.json({
+                        res.json({
                             success:false,
                             message:"The paid amount and the module amount dont match"
                         })
                     }
                 }else {
-                    req.json({
+                    res.json({
                         success:false,
                         message:"couldnt find the course"
                     })
                 }
             })
         }else {
-            req.json({
+            res.json({
                 success:false,
                 message:"User does not exits"
             })
@@ -440,6 +464,49 @@ exports.ongoing_and_completed_course = function (req,res) {
             res.json({
                 success:false,
                 message: "Couldnt find user try login again"
+            })
+        }
+    })
+}
+
+exports.change_to_completd = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Video.findOne({_id:req.body.vid_id}).then((vid) => {
+                if(vid) {
+                    Bought_course.findOne({user_id:user._id, module_id: vid.module_id}).then((bought_vid) => {
+                        if(bought_vid) {
+                            Bought_course.findOneAndUpdate({_id:bought_vid._id}, { $set:{completd_course: 1}}).then((updt) => {
+                                if(updt) {
+                                    res.json({
+                                        success:true,
+                                        message:"Congratuation on completing this course"
+                                    })
+                                }else {
+                                    res.json({
+                                        success:false,
+                                        message:"Couldnt find any course to update try again"
+                                    })
+                                }
+                            })
+                        }else {
+                            res.json({
+                                success:false,
+                                message:"Couldnt find any course to update try again"
+                            })
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        message:"Couldnt find any video please try again"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
             })
         }
     })

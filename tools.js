@@ -142,6 +142,15 @@ s3.putObject(params, function (err, data) {
   }
 
   try {
+    s3.headObject(downloadParams, (err, data) => {
+      if (err && err.code === 'NotFound') {
+          console.error('Image not found on S3:');
+      } else if (err) {
+          console.error('Error checking image:', err);
+      } else {
+          console.log('Image found on S3:');
+      }
+  });
       const stream = s3.getObject(downloadParams).createReadStream();
       // Return the stream for the valid image
       return stream;
