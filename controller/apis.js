@@ -81,7 +81,13 @@ exports.get_selected_cat = function (req,res) {
 
 exports.trending_course = function (req,res) {
     User.findOne({ _id:req.body.user_id}).then((user) => {
-        if(user) {
+        if(user) { 
+            var limit_query = {
+                $limit: 1000,
+            };
+            if (req.body.limit == "yes") {
+                limit_query["$limit"] = 4;
+            }
             Modules.aggregate([
                 {
                     $match: {
@@ -115,9 +121,7 @@ exports.trending_course = function (req,res) {
                         likes:-1
                     }
                 },
-                {
-                    $limit:  4
-                }
+                limit_query
             ]).then((course) => {
                 if(course.length > 0) {
                     res.json({
