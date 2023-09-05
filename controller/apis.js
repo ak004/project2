@@ -88,12 +88,20 @@ exports.trending_course = function (req,res) {
             if (req.body.limit == "yes") {
                 limit_query["$limit"] = 4;
             }
+            var filter = {
+                $match: {},
+            };
+            if(req.body.cat != "" && req.body.cat != undefined && req.body.cat  != null ) {
+                filter["$match"]["catagory_id"]  =  new mongoose.Types.ObjectId(req.body.cat)
+               
+            }
             Modules.aggregate([
                 {
                     $match: {
-                        status:{$gt: 1}
+                        status:{$gt: 1},
                     }
-                },
+                } ,
+                filter,
                 {
                     $lookup:{
                         from: "users",
