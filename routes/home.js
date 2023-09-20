@@ -12,12 +12,16 @@ module.exports = function (app) {
 
     app.route('/login').get(homecontroller.login);
     app.route('/login').post(homecontroller.login);
+    app.route('/api/login').post(homecontroller.login);
 
     app.route('/signup').get(homecontroller.signup);
     app.route('/signup').post(homecontroller.signup);
+    app.route('/api/signup').post(homecontroller.signup);
 
     app.route('/send_verification').get(homecontroller.send_verification);
     app.route('/send_verification').post(homecontroller.send_verification);
+
+    app.route('/api/send_verification').post(homecontroller.send_verification);
 
     app.route('/logout').get(homecontroller.logout);
     app.route('/logout').post(homecontroller.logout);
