@@ -7,8 +7,24 @@ const path = require('path');
 const mongoose = require('mongoose');
 var session = require('express-session');
 const bodyParser = require('body-parser');
+const http = require('http');
+const WebSocket = require('ws');
+const server = http.createServer(app); 
 
 
+const wss = new WebSocket.Server({ noServer: true });
+
+// Define WebSocket message handling
+wss.on('connection', (ws) => {
+  ws.on('message', (message) => {
+    console.log('WebSocket message received:', message);
+    // Handle WebSocket messages for the /login route here
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket connection closed');
+  });
+});
 
 const upload = multer({ dest: 'uploads/' });
 app.use(upload.any());

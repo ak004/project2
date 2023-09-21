@@ -9,6 +9,8 @@ const fs            = require('fs-extra')
 const mongoose = require('mongoose');
 const Tools  = require('../tools.js');
 const AWS = require('aws-sdk');
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ noServer: true });
 // const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
 const mime = require('mime');
@@ -79,6 +81,11 @@ exports.home = function (req,res) {
 }
 
 exports.login =  async  function   (req,res)  {
+
+    // wss.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
+    //     // WebSocket connection established for /login route
+    //   });
+  
     if (Object.keys(req.body).length > 0) {
         const { username, password } = req.body;
         const user = await User.findOne({ user_name: username });
