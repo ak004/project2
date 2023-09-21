@@ -26,6 +26,15 @@ wss.on('connection', (ws) => {
   });
 });
 
+
+// Upgrade HTTP request to WebSocket connection
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
+});
+
+
 const upload = multer({ dest: 'uploads/' });
 app.use(upload.any());
 app.use(express.urlencoded({

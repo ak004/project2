@@ -17,6 +17,7 @@ const mime = require('mime');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
+const qrcode = require('qrcode');
 
 var smtpConfig = {
     host: 'smtp.gmail.com',
@@ -86,25 +87,46 @@ exports.login =  async  function   (req,res)  {
     //     // WebSocket connection established for /login route
     //   });
   
+    const userIdentifier = '123456';
+    qrcode.toFile(
+        './assets/user_qr.png', // Output file path
+        userIdentifier, // Data to encode in the QR code
+        {
+          errorCorrectionLevel: 'H', // Error correction level
+          margin: 2, // Margin around the QR code
+          color: {
+            dark: '#000000', // Color of the dark squares
+            light: '#ffffff', // Color of the light squares
+          },
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('QR code saved as user_qr.png');
+        }
+      );
+
     if (Object.keys(req.body).length > 0) {
         const { username, password } = req.body;
         const user = await User.findOne({ user_name: username });
         if (!user) {
           return res.json({
             success: false,
-            message: 'Invalid credentials username' });
+            message: 'Invalid credentials' });
         }
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
           return res.json({ 
             success: false,
-            message: 'Invalid credentials password' });
+            message: 'Invalid credentials' });
         }
         req.session.user = user;
         res.json({ 
             success: true,
             message: 'Login successful',
-            user:user
+            user:user,
+            record: {
+                user:user
+            }
          });
     }else {
         res.render("auth-sign-in", {
@@ -144,7 +166,10 @@ exports.signup = function (req,res) {
                                 if(sv_data)  {
                                     res.json({
                                         success: true,
-                                        message:"User created successfully"
+                                        message:"User created successfully",
+                                        record: {
+                                            user:sv_data
+                                        }
                                     })
                                 }else {
                                     res.json({
@@ -155,7 +180,6 @@ exports.signup = function (req,res) {
                             } )
                             });
                         });
-                       
                     }
                 })
             }
@@ -169,7 +193,7 @@ exports.signup = function (req,res) {
 }
 
 exports.send_verification = function(req, res) {
- 
+    console.log("firs iam here")
     User.find({email: req.body.email}).then((found_user) => {
         if(found_user.length >0) {
             res.json({
@@ -185,7 +209,11 @@ exports.send_verification = function(req, res) {
                     success:true,
                     email:req.body.email,
                     codee: code,
-                    message:"We send you a verfication code in your please check if there is no email please check your spam box"
+                    message:"We send you a verfication code in your please check if there is no email please check your spam box",
+                    record: {
+                        email:req.body.email,
+                        code: code,
+                    }
                 })
         }
     })

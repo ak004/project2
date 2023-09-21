@@ -8,4 +8,7 @@ module.exports = function (app) {
     app.route('/api/get_selected_course').post(apis.get_selected_course);
     app.route('/api/get_course_details').post(apis.get_course_details);
     app.route('/api/get_vid_details').post(apis.get_vid_details);
+    app.route('/api/buy_course').post(apis.buy_course);
+    app.route('/api/ongoing_and_completed_course').post(apis.ongoing_and_completed_course);
+    app.route('/api/change_to_completd').post(apis.change_to_completd);
 }

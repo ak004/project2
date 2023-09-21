@@ -132,20 +132,42 @@ s3.putObject(params, function (err, data) {
     AWS.config.update({
       accessKeyId: process.env.ACCESS_KEY,
       secretAccessKey: process.env.SECRET_KEY,
-      
-    });
-    // AWS.config.update({region:'eu-north-1'});
+  });
 
-    console.log("the filef keuu",filekey);
-    var s3 = new AWS.S3();
+  var s3 = new AWS.S3();
 
-    const downloadParmams = {
-      Key:filekey,
+  const downloadParams = {
+      Key: filekey,
       Bucket: "mascuud-bucket",
-    }
+  }
 
-    return  s3.getObject(downloadParmams).createReadStream();
-
+  try {
+    s3.headObject(downloadParams, (err, data) => {
+      if (err && err.code === 'NotFound') {
+          console.error('Image not found on S3:');
+      } else if (err) {
+          console.error('Error checking image:', err);
+      } else {
+          console.log('Image found on S3:');
+      }
+  });
+      const stream = s3.getObject(downloadParams).createReadStream();
+      // Return the stream for the valid image
+      return stream;
+  } catch (error) {
+      // Handle the "Access Denied" error
+      if (error.code === "AccessDenied") {
+          // You can log the error for debugging purposes
+          console.error("Access Denied Error:", error);
+          // Return a placeholder or default image stream, or an error message
+          // For example, you can create a default image and return its stream
+          const defaultImage = "path/to/default/image.jpg";
+          return fs.createReadStream(defaultImage);
+      } else {
+          // Handle other errors by throwing or logging them
+          throw error;
+      }
+  }
   }
 
 
