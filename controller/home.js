@@ -4,14 +4,14 @@ const nodemailer = require('nodemailer');
 const Modules = require('../model/modules');
 const Video = require('../model/video');
 const Catagories = require('../model/catagory')
+const Qr_code_session = require('../model/qr_code_session')
 const saltRounds = 10;
 const fs            = require('fs-extra')
 const mongoose = require('mongoose');
 const Tools  = require('../tools.js');
 const AWS = require('aws-sdk');
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ noServer: true });
-// const ObjectId = new mongoose.Types.ObjectId;
+const ObjectId = new mongoose.Types.ObjectId;
 require('dotenv').config();
 const mime = require('mime');
 const multer = require('multer');
@@ -82,29 +82,39 @@ exports.home = function (req,res) {
 }
 
 exports.login =  async  function   (req,res)  {
+    const userIdentifier = req.sessionID;
+    var random_num = generateRandomNumber();
 
-    // wss.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
-    //     // WebSocket connection established for /login route
-    //   });
-  
-    const userIdentifier = '123456';
-    qrcode.toFile(
-        './assets/user_qr.png', // Output file path
-        userIdentifier, // Data to encode in the QR code
-        {
-          errorCorrectionLevel: 'H', // Error correction level
-          margin: 2, // Margin around the QR code
-          color: {
-            dark: '#000000', // Color of the dark squares
-            light: '#ffffff', // Color of the light squares
-          },
-        },
-        (err) => {
-          if (err) throw err;
-          console.log('QR code saved as user_qr.png');
+    Qr_code_session.findOneAndUpdate({session_id:userIdentifier }, {
+        $set: {
+            random_number:random_num,
+            session_id: userIdentifier,
+            user_id:null,
+            logged_in:false
         }
-      );
-
+    }, {
+        upsert: true,
+        new: true,  
+        runValidators: true,  
+      }).then((data) => {
+        console.log("the sessionID: ",userIdentifier);
+        qrcode.toFile(
+            './assets/user_qr.png',  
+            userIdentifier+ "-" +random_num,
+            {
+              errorCorrectionLevel: 'H', 
+              margin: 3, 
+              color: {
+                dark: '#000000', // Color of the dark squares
+                light: '#ffffff', // Color of the light squares
+              },
+            },
+            (err) => {
+              if (err) throw err;
+              console.log('QR code saved as user_qr.png');
+            }
+          );
+      })
     if (Object.keys(req.body).length > 0) {
         const { username, password } = req.body;
         const user = await User.findOne({ user_name: username });
@@ -130,7 +140,9 @@ exports.login =  async  function   (req,res)  {
          });
     }else {
         res.render("auth-sign-in", {
-            test:"testt"
+            test:"testt",
+            session: req.session,
+            sessionID: req.sessionID
         })
     }
 }
@@ -807,6 +819,77 @@ exports.delete_video = async function (req,res) {
 
 
 
+exports.qr_validation = async function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Qr_code_session.findOne({session_id: new  mongoose.Types.ObjectId(req.body.session_id), random_number: req.body.num}).then((found) => {
+            if(found) {
+                User.findOne({_id: req.body.user_id}).then((user) => {
+                    if(user) {
+                        Qr_code_session.findByIdAndUpdate({_id:found._id}, {
+                            $set: {
+                                user_id:user._id,
+                                logged_in:true
+                            }
+                        }).then((logged) => {
+                            res.json({
+                                success:true,
+                                message: "Successfully logged in"
+                            }) 
+                        })
+                    }else {
+                        res.json({
+                            success:false,
+                            message: "No user found"
+                        })
+                    }
+                })
+            }else {
+                res.json({
+                    success:false,
+                    message: "No session found"
+                })
+            }
+        })
+    }else {
+        res.json({
+            success:false,
+            message: "No data found"
+        })
+    }
+}
+
+
+exports.auth_user = async function (req,res) {
+    console.log("the could to log him im: ", req.sessionID);
+    Qr_code_session.findOne({session_id: req.sessionID, logged_in: true, user_id: {$ne: null}}).then((found) => {
+        if(found) {
+            User.findOne({_id:found.user_id}).then((user) => {
+                if(user) {
+                    console.log("LOGGGED INNNNNN")
+                    req.session.user = user;
+                    res.json({
+                        success:true,
+                        message: "No user found"
+                    })
+
+                }else {
+                    res.json({
+                        success:false,
+                        message: "No user found"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message: "No logged in"
+            })
+        }
+    })
+}
+
+
+
 function delete_uncert_data() {
 
     const folderPath = './uploads'; 
@@ -832,4 +915,8 @@ tokenGenerator = function (length) {
 
   
 
-
+  function generateRandomNumber() {
+    const min = 1000000000; // 10-digit number starts with 1
+    const max = 9999999999; // 10-digit number ends with 9
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }

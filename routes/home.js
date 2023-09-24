@@ -52,4 +52,8 @@ module.exports = function (app) {
     app.route('/delete_video').post(Tools.isLoggedIn,homecontroller.delete_video);
 
 
+    //
+    app.route('/qr_validation').post(homecontroller.qr_validation);
+    app.route('/auth_user').post(homecontroller.auth_user);
+
 }

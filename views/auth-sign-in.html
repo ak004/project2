@@ -34,6 +34,7 @@
                                  <h2 class="mb-2 text-white">Sign In</h2>
                                  <p>Login to stay connected.</p>
                                  <form id="login_form" name="login_form" method="post">
+                                    <input type="hidden" id="lld" name="lld" value="<%=sessionID%>"/> 
                                     <div class="row">
                                        <div class="col-lg-12">
                                           <div class="floating-label form-group">
@@ -94,6 +95,32 @@
     <script src="vendor/moment.min.js"></script>
 
       <script>
+
+// Periodically poll the server for updates
+function pollForUpdates() {
+   var lld = $('#lld').val().trim();
+   // const requestData = typeof lld === 'string' ? JSON.parse(lld) : lld;
+   // console.log("the token: ", lld);
+   $.ajax({
+               type: 'POST',
+               headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${lld}`, // Use a custom header, e.g., 'Authorization'
+               },
+               url: '/auth_user',
+               data: {}, // Send as JSON string
+               dataType: "json",
+               dataType: "json",
+               success: function (res) {
+                 if(res.success) {
+                  window.location.href = '/';
+                 }else {
+                  console.log("the message: ",res.message )
+                 }
+               }
+           });
+}
+setInterval(pollForUpdates, 5000);
 
 function login() {
      

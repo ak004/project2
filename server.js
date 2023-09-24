@@ -7,32 +7,9 @@ const path = require('path');
 const mongoose = require('mongoose');
 var session = require('express-session');
 const bodyParser = require('body-parser');
-const http = require('http');
-const WebSocket = require('ws');
-const server = http.createServer(app); 
 
+ 
 
-const wss = new WebSocket.Server({ noServer: true });
-
-// Define WebSocket message handling
-wss.on('connection', (ws) => {
-  ws.on('message', (message) => {
-    console.log('WebSocket message received:', message);
-    // Handle WebSocket messages for the /login route here
-  });
-
-  ws.on('close', () => {
-    console.log('WebSocket connection closed');
-  });
-});
-
-
-// Upgrade HTTP request to WebSocket connection
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
-});
 
 
 const upload = multer({ dest: 'uploads/' });
@@ -54,7 +31,7 @@ app.use(express.static('./assets'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 app.use(session({
-  resave: true,
+  resave: false,
   saveUninitialized: true,
   secret: 'resturant_secret',
   maxAge: '1h'
@@ -83,6 +60,9 @@ const db = "mongodb://0.0.0.0:27017/project2"
 
 
 connectDB();
+
+
+
 
 app.get("*", function (req, res) {
     res.render("pages-error");
