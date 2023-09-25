@@ -4,6 +4,8 @@ const nodemailer = require('nodemailer');
 const Modules = require('../model/modules');
 const Video = require('../model/video');
 const Catagories = require('../model/catagory')
+const Menu = require('../model/menu');
+const Page = require('../model/page');
 const Qr_code_session = require('../model/qr_code_session')
 const saltRounds = 10;
 const fs            = require('fs-extra')
@@ -77,7 +79,8 @@ exports.showattachement = function (req,res) {
 exports.home = function (req,res) {
     res.render("index", {
         test:"testt",
-        user:req.session.user
+        user:req.session.user,
+        menu:req.session.menus
     })
 }
 
@@ -129,15 +132,52 @@ exports.login =  async  function   (req,res)  {
             success: false,
             message: 'Invalid credentials' });
         }
-        req.session.user = user;
-        res.json({ 
-            success: true,
-            message: 'Login successful',
-            user:user,
-            record: {
-                user:user
-            }
-         });
+        Page.aggregate([
+            {
+                $lookup:{
+                    from: "menus",
+                    localField: "menu_id",
+                    foreignField: "_id",
+                    as: "menu"
+                }
+            },
+            {
+                $unwind: "$menu"
+            },
+
+                    {
+                        $group:{ 
+                            _id:"$menu._id",
+                            menu_name: { $last:"$menu.name"},
+                            menu_icon: { $last:"$menu.icon"},
+                            page:{
+                                $push:{
+                                page_id:"$_id",
+                                page_name:"$name",
+                                page_url:"$url" ,
+                                page_icon: "$icon"
+                         
+                                }
+                                }
+                            }
+                        
+                        },
+                    {
+                        $sort:{_id:1}
+                    }
+
+        ]).then((pages) => {
+            req.session.user = user;
+            req.session.menus = pages;
+            res.json({ 
+                success: true,
+                message: 'Login successful',
+                user:user,
+                record: {
+                    user:user,
+                }
+             });
+        })
     }else {
         res.render("auth-sign-in", {
             test:"testt",
@@ -198,7 +238,8 @@ exports.signup = function (req,res) {
         })
       } else {
         res.render("auth-sign-up", {
-            test:"testt"
+            test:"testt",
+            menu:req.session.menus
         })
       }
  
@@ -252,7 +293,8 @@ exports.blank = function (req,res) {
 exports.profile = function (req,res) {
     res.render("user-profile", {
         test:"testt",
-        user:req.session.user
+        user:req.session.user,
+        menu:req.session.menus
     })
 }
 
@@ -285,6 +327,225 @@ exports.updata_user_data = function (req,res) {
 }
 
 
+exports.menu = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var filter = {
+            "$match": {}
+        };
+        if(req.body.status2 == "suspended") {
+            filter["$match"]["status"] = 0;
+        }else if(req.body.status2 == "active") {
+            filter["$match"]["status"] = 2;
+        }
+      
+         Menu.aggregate([
+            filter,
+        ]).then((data) => {
+            res.render("menu", {
+                user:req.session.user,
+                data:data,
+                status: req.body.status2,
+                menu:req.session.menus
+            })
+        })
+    }else {
+        Menu.find({}).then((data) => {
+            res.render("menu", {
+                user:req.session.user,
+                data:data,
+                status: "",
+                menu:req.session.menus
+            })
+        })
+    }
+}
+
+
+exports.new_menu = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+
+        if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
+         
+            var save_restura = new Menu({
+                name: req.body.r_name,
+                icon: req.body.r_icon,
+                status: req.body.status == "active" ? 2 : 0,
+            });
+            save_restura.save().then((svf) => {
+                if (svf) {
+                  res.redirect('/menu')
+                }
+             })
+        }else {
+            Menu.findOne({_id:req.body._id}).then((r) => {
+                if(r) {
+
+                    Menu.findByIdAndUpdate({_id: r._id}, {
+                            $set:{
+                                name: req.body.r_name,
+                                icon: req.body.r_icon,
+                                status: req.body.status == "active" ? 2 : 0,
+                            }
+                        }).then((upd) => {
+                            if(upd) {
+                                res.redirect('/menu')
+                            }else {
+                                res.json({
+                                    success: false,
+                                    message: "Couldnt update"
+                                })
+                            }
+                        })
+
+                }else {
+                    res.json({
+                        success: false,
+                        message: "Couldnt find the Menu"
+                    })
+                }
+            })
+        }
+
+    }else {
+       
+        res.json({
+            success: false,
+            message: "no data found"
+        })
+    }
+}
+
+exports.delete_menu = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Menu.deleteOne({_id: req.body._id}).then(() => {
+            Page.deleteMany({menu_id:new  mongoose.Types.ObjectId(req.body._id) }).then(() => {
+                res.json({
+                    success:true,
+                    message:"Module deleted successfully"
+                })
+            })
+         })
+    }
+}
+
+
+
+exports.pages = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var filter = {
+            "$match": {}
+        };
+        if(req.body.status2 == "suspended") {
+            filter["$match"]["status"] = 0;
+        }else if(req.body.status2 == "active") {
+            filter["$match"]["status"] = 2;
+        }
+      
+         Page.aggregate([
+            filter,
+        ]).then((data) => {
+            Menu.find({status: 2}).then((menuss) => {
+            res.render("page", {
+                user:req.session.user,
+                data:data,
+                status: req.body.status2,
+                menu:menuss,
+                menu:req.session.menus
+                })
+            })
+        })
+    }else {
+        Page.find({}).then((data) => {
+            Menu.find({status: 2}).then((menuss) => {
+                res.render("page", {
+                    user:req.session.user,
+                    data:data,
+                    status: "",
+                    menu:menuss,
+                    menu:req.session.menus
+                })
+            })
+        })
+    }
+}
+
+
+exports.new_page = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+
+        if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
+            console.log("the pages new save", req.body);
+            Menu.findOne({_id: req.body.menu_id}).then((men) => {
+                if(men) {
+                    var save_restura = new Page({
+                        name: req.body.r_name,
+                        icon: req.body.r_icon,
+                        menu_id:men._id,
+                        menu_name: men.name,
+                        url: req.body.url,
+                        status: req.body.status == "active" ? 2 : 0,
+                    });
+                    save_restura.save().then((svf) => {
+                        if (svf) {
+                          res.redirect('/pages')
+                        }
+                     })
+                }else {
+                    res.redirect('/pages')
+                }
+            })
+          
+        }else {
+            Page.findOne({_id:req.body._id}).then((r) => {
+                if(r) {
+                    Menu.findOne({_id: req.body.menu_id}).then((men) => {
+                        if(men) {
+                            Page.findByIdAndUpdate({_id: r._id}, {
+                            $set:{
+                                name: req.body.r_name,
+                                icon: req.body.r_icon,
+                                menu_id:men._id,
+                                menu_name: men.name,
+                                url: req.body.url,
+                                status: req.body.status == "active" ? 2 : 0,
+                            }
+                        }).then((upd) => {
+                            if(upd) {
+                                res.redirect('/pages')
+                            }else {
+                                res.json({
+                                    success: false,
+                                    message: "Couldnt update"
+                                })
+                            }
+                        })
+                    }else {
+                        res.json({
+                            success: false,
+                            message: "Couldnt update"
+                        })
+                    }
+                })
+
+                }else {
+                    res.json({
+                        success: false,
+                        message: "Couldnt find the Menu"
+                    })
+                }
+            })
+        }
+
+    }else {
+       
+        res.json({
+            success: false,
+            message: "no data found"
+        })
+    }
+}
+
+
 exports.catagories = function (req,res) {
     if (Object.keys(req.body).length > 0) {
         var filter = {
@@ -304,7 +565,8 @@ exports.catagories = function (req,res) {
             res.render("catagories", {
                 user:req.session.user,
                 data:data,
-                status: req.body.status2
+                status: req.body.status2,
+                menu:req.session.menus
             })
         })
 
@@ -319,7 +581,8 @@ exports.catagories = function (req,res) {
                 res.render("course_catagories", {
                     user:req.session.user,
                     data:mod,
-                    status: ""
+                    status: "",
+                    menu:req.session.menus
                 })
         })
     }
@@ -427,7 +690,8 @@ exports.modules = function (req,res) {
                     user:req.session.user,
                     data:data,
                     status: req.body.status2,
-                    cat:cat
+                    cat:cat,
+                    menu:req.session.menus
                 })
             })
         })
@@ -445,7 +709,8 @@ exports.modules = function (req,res) {
                     user:req.session.user,
                     data:mod,
                     status: "",
-                    cat:cat
+                    cat:cat,
+                    menu:req.session.menus
                 })
             })
         })
@@ -559,7 +824,8 @@ exports.upload_videos = function (req,res) {
                     user:req.session.user,
                     data:vids,
                     modules:modules,
-                    status: ""
+                    status: "",
+                    menu:req.session.menus
                 })
             })
         })

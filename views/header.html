@@ -74,7 +74,7 @@
                               <span class="ml-4">Dashboards</span>
                           </a>
                       </li>
-                      <li class=" ">
+                      <li>
                         <a href="#otherpage" class="collapsed" data-toggle="collapse" aria-expanded="false">
                             <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -112,7 +112,29 @@
                              
                         </ul>
                     </li>
-                   
+                    <% menu.forEach(function(entry) { %>
+                        <li>
+                            <a href="#<%=entry.menu_name%>" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                <svg class="svg-icon" id="p-dash07" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="<%= entry.menu_icon %>"></path>
+                                </svg>
+                                <span class="ml-4"><%= entry.menu_name %></span>                        
+                                <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                            </a>
+                    
+                            <ul id="<%=entry.menu_name%>" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                                <% entry.page.forEach(function(sub) { %>
+                                    <li class="">
+                                        <a href="<%= sub.page_url %>" class="svg-icon">
+                                            <path d="<%= sub.page_icon %>"></path>
+                                            <span class="ml-4"><%= sub.page_name %></span>
+                                        </a>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        </li>
+                    <% }) %>
                       <li class="">
                           <a href="../backend/page-project.html" class="svg-icon">                        
                               <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

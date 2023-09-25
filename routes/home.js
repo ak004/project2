@@ -26,6 +26,16 @@ module.exports = function (app) {
     app.route('/logout').get(homecontroller.logout);
     app.route('/logout').post(homecontroller.logout);
 
+    app.route('/menu').get(Tools.isLoggedIn,homecontroller.menu);
+    app.route('/menu').post(Tools.isLoggedIn,homecontroller.menu);
+    app.route('/new_menu').post(Tools.isLoggedIn,homecontroller.new_menu);
+    app.route('/delete_menu').post(Tools.isLoggedIn,homecontroller.delete_menu);
+ 
+    app.route('/pages').get(Tools.isLoggedIn,homecontroller.pages);
+    app.route('/pages').post(Tools.isLoggedIn,homecontroller.pages);
+    app.route('/new_page').post(Tools.isLoggedIn,homecontroller.new_page);
+
+
     app.route('/profile').get(Tools.isLoggedIn,homecontroller.profile);
     app.route('/profile').post(Tools.isLoggedIn,homecontroller.profile);
     app.route('/updata_user_data').post(Tools.isLoggedIn,homecontroller.updata_user_data);
