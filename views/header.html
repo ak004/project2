@@ -65,7 +65,7 @@
           <div class="data-scrollbar" data-scroll="1">
               <nav class="iq-sidebar-menu">
                   <ul id="iq-sidebar-toggle" class="iq-menu">
-                      <li class="active">
+                      <li class="">
                           <a href="/" class="svg-icon">                        
                               <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -74,44 +74,6 @@
                               <span class="ml-4">Dashboards</span>
                           </a>
                       </li>
-                      <li>
-                        <a href="#otherpage" class="collapsed" data-toggle="collapse" aria-expanded="false">
-                            <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            <span class="ml-4">Tutoring</span>                        
-                            <i class="las la-angle-right iq-arrow-right arrow-active"></i>
-                            <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
-                        </a>
-                        <ul id="otherpage" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-                            <li class="">
-                                <a href="/catagories" class="svg-icon">
-                                    
-                                    <span class="ml-4">Course catagories</span>
-                                </a>
-                            </li>
-                            <li class="">
-                                <a href="/modules" class="svg-icon">
-                                    <svg class="svg-icon" id="p-dash016" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                                    </svg>
-                                    <span class="ml-4">Module</span>
-                                </a>
-                            </li>
-                            <li class="">
-                                <a href="/upload_videos" class="svg-icon">
-                                    <svg class="svg-icon" id="p-dash07" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                                    </svg>
-                                    <span class="ml-4">Upload Videos</span>
-                                </a>
-                            </li>
-                         
-                              
-                               
-                             
-                        </ul>
-                    </li>
                     <% menu.forEach(function(entry) { %>
                         <li>
                             <a href="#<%=entry.menu_name%>" class="collapsed" data-toggle="collapse" aria-expanded="false">
@@ -125,7 +87,7 @@
                     
                             <ul id="<%=entry.menu_name%>" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                 <% entry.page.forEach(function(sub) { %>
-                                    <li class="">
+                                    <li id="<%=sub.page_url%>"> <!--  here i want to add active class if the current url is same as this li id -->
                                         <a href="<%= sub.page_url %>" class="svg-icon">
                                             <path d="<%= sub.page_icon %>"></path>
                                             <span class="ml-4"><%= sub.page_name %></span>
@@ -135,17 +97,7 @@
                             </ul>
                         </li>
                     <% }) %>
-                      <li class="">
-                          <a href="../backend/page-project.html" class="svg-icon">                        
-                              <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                                  <rect x="6" y="14" width="12" height="8"></rect>
-                              </svg>
-                              <span class="ml-4">Projects</span>
-                          </a>
-                      </li>
-              
+                     
                     
                    
                    
@@ -211,5 +163,25 @@
           </div>
       </div>   
 
+      <script>
+// Get the current page's URL
+var currentPageURL = window.location.pathname;
+
+console.log("the curretn tur;:", currentPageURL);
+// Loop through the <li> elements in the menu
+var liElements = document.querySelectorAll(".iq-submenu li");
+liElements.forEach(function (li) {
+    var liId = li.getAttribute("id");
+    console.log("looopppp", liId);
+
+    // Check if the current page's URL matches the <li>'s id
+    if (liId === currentPageURL) {
+console.log("found", liId);
+        // Add the 'active' class to the <li> element
+        li.classList.add("active");
+    }
+});
+        
+      </script>
 
       
