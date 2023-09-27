@@ -103,7 +103,7 @@ exports.login =  async  function   (req,res)  {
         console.log("the sessionID: ",userIdentifier);
         qrcode.toFile(
             './assets/user_qr.png',  
-            userIdentifier+ "-" +random_num,
+            userIdentifier+ "-number:" +random_num,
             {
               errorCorrectionLevel: 'H', 
               margin: 3, 
@@ -1086,8 +1086,9 @@ exports.delete_video = async function (req,res) {
 
 
 exports.qr_validation = async function (req,res) {
+    console.log("Calledd---------------------", req.body);
     if (Object.keys(req.body).length > 0) {
-        Qr_code_session.findOne({session_id: new  mongoose.Types.ObjectId(req.body.session_id), random_number: req.body.num}).then((found) => {
+        Qr_code_session.findOne({session_id:  req.body.session_id, random_number: req.body.num}).then((found) => {
             if(found) {
                 User.findOne({_id: req.body.user_id}).then((user) => {
                     if(user) {
@@ -1132,11 +1133,49 @@ exports.auth_user = async function (req,res) {
             User.findOne({_id:found.user_id}).then((user) => {
                 if(user) {
                     console.log("LOGGGED INNNNNN")
-                    req.session.user = user;
-                    res.json({
-                        success:true,
-                        message: "No user found"
+                    Page.aggregate([
+                        {
+                            $lookup:{
+                                from: "menus",
+                                localField: "menu_id",
+                                foreignField: "_id",
+                                as: "menu"
+                            }
+                        },
+                        {
+                            $unwind: "$menu"
+                        },
+            
+                                {
+                                    $group:{ 
+                                        _id:"$menu._id",
+                                        menu_name: { $last:"$menu.name"},
+                                        menu_icon: { $last:"$menu.icon"},
+                                        page:{
+                                            $push:{
+                                            page_id:"$_id",
+                                            page_name:"$name",
+                                            page_url:"$url" ,
+                                            page_icon: "$icon"
+                                     
+                                            }
+                                            }
+                                        }
+                                    
+                                    },
+                                {
+                                    $sort:{_id:1}
+                                }
+            
+                    ]).then((pages) => {
+                        req.session.user = user;
+                        req.session.menus = pages;
+                        res.json({
+                            success:true,
+                            message: "No user found"
+                        })
                     })
+                   
 
                 }else {
                     res.json({

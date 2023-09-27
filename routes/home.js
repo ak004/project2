@@ -63,7 +63,7 @@ module.exports = function (app) {
 
 
     //
-    app.route('/qr_validation').post(homecontroller.qr_validation);
+    app.route('/api/qr_validation').post(homecontroller.qr_validation);
     app.route('/auth_user').post(homecontroller.auth_user);
 
 }
