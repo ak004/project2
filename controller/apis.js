@@ -211,12 +211,17 @@ exports.trending_course = function (req,res) {
 }
 
 exports.similar_course = function (req,res) {
+    
+    console.log("000000000000000000");
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
+            console.log("11111111111");
             Modules.findOne({_id:new mongoose.Types.ObjectId(req.body.cat_id) }).then((sim) => {
                 if(sim) {
+                    console.log("222222222");
                     Modules.find({status:{$gt: 1}, catagory_id:sim.catagory_id}).sort({likes: -1}).then((course) => {
                         if(course.length > 0) {
+                            console.log("found coursd");
                             res.json({
                                 success:true,
                                 message: "Successfuly found the data",
