@@ -50,6 +50,61 @@ exports.get_cat = function (req,res) {
     })
 }
 
+exports.top_mentors = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Modules.aggregate([
+                {
+                    $group: {
+                        _id: "$user_id",
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { count: -1 }
+                },
+                {
+                    $limit: 4
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "_id",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $project: {
+                        _id: "$user._id",
+                        name: "$user.name",
+                        moduleCount: "$count"
+                    }
+                }
+            
+            ]).then((mentors) => {
+                if(mentors.length > 0) {
+                    res.json({
+                        success:true,
+                        message: "Successfuly found the data",
+                        record: {
+                            data:mentors
+                        }
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message: "Couldnt find user try login again"
+            })
+        }
+    })
+}
+
 exports.get_selected_cat = function (req,res) {
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
@@ -153,6 +208,34 @@ exports.trending_course = function (req,res) {
             })
         }
     })
+}
+
+exports.similar_course = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Modules.find({status:{$gt: 1}, catagory_id:new mongoose.Types.ObjectId(req.body.cat_id)}).sort({likes: -1}).then((course) => {
+                if(course.length > 0) {
+                    res.json({
+                        success:true,
+                        message: "Successfuly found the data",
+                        record: {
+                            data:course
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        message: "Couldnt find any course wait for upload"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message: "Couldnt find user try login again"
+            })
+        }
+    }) 
 }
 
 exports.all_trending_course = function (req,res) {
