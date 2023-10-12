@@ -811,15 +811,36 @@ exports.delete_modules = function (req,res) {
 exports.upload_videos = function (req,res) {
     
     if (Object.keys(req.body).length > 0) {
-
-    }else {
         Video.find({}).then((vids) => {
             var filter = {
                 "$match": {}
             };
-            if(req.session.user.role == "user") {
+            if(req.body.status2 == "suspended") {
+                filter["$match"]["status"] = 0;
+            }else if(req.body.status2 == "active") {
+                filter["$match"]["status"] = 2;
+            }
+             if(req.session.user.role == "user") {
                 filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
              }
+            Modules.aggregate([filter]).then((modules) => {
+                res.render("upload_videos", {
+                    user:req.session.user,
+                    data:vids,
+                    modules:modules,
+                    status: "",
+                    menu:req.session.menus
+                })
+            })
+        })
+    }else {
+        var filter = {
+            "$match": {}
+        };
+        if(req.session.user.role == "user") {
+            filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
+         }
+        Video.aggregate([filter]).then((vids) => {
             Modules.aggregate([filter]).then((modules) => {
                 res.render("upload_videos", {
                     user:req.session.user,
