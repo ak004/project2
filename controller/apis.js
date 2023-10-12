@@ -213,22 +213,32 @@ exports.trending_course = function (req,res) {
 exports.similar_course = function (req,res) {
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
-            Modules.find({status:{$gt: 1}, catagory_id:new mongoose.Types.ObjectId(req.body.cat_id)}).sort({likes: -1}).then((course) => {
-                if(course.length > 0) {
-                    res.json({
-                        success:true,
-                        message: "Successfuly found the data",
-                        record: {
-                            data:course
+            Modules.findOne({_id:new mongoose.Types.ObjectId(req.body.cat_id) }).then((sim) => {
+                if(sim) {
+                    Modules.find({status:{$gt: 1}, catagory_id:sim.catagory_id}).sort({likes: -1}).then((course) => {
+                        if(course.length > 0) {
+                            res.json({
+                                success:true,
+                                message: "Successfuly found the data",
+                                record: {
+                                    data:course
+                                }
+                            })
+                        }else {
+                            res.json({
+                                success:false,
+                                message: "Couldnt find any course wait for upload"
+                            })
                         }
                     })
-                }else {
+                }else{
                     res.json({
                         success:false,
                         message: "Couldnt find any course wait for upload"
-                    })
+                    }) 
                 }
             })
+       
         }else {
             res.json({
                 success:false,
