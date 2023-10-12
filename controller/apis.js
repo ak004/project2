@@ -237,6 +237,17 @@ exports.similar_course = function (req,res) {
                             $unwind: "$cat"
                         } ,
                         {
+                            $lookup:{
+                                from: "users",
+                                localField: "user_id",
+                                foreignField: "_id",
+                                as: "mentor"
+                            }
+                        },
+                        {
+                            $unwind: "$mentor"
+                        },
+                        {
                             $sort: {
                                 likes: -1
                             }
