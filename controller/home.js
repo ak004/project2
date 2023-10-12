@@ -77,6 +77,7 @@ exports.showattachement = function (req,res) {
 
 
 exports.home = function (req,res) {
+    console.log("the meunus: ", req.session.menus);
     res.render("index", {
         test:"testt",
         user:req.session.user,
