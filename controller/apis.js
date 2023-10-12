@@ -219,7 +219,30 @@ exports.similar_course = function (req,res) {
             Modules.findOne({_id:req.body.cat_id }).then((sim) => {
                 if(sim) {
                     console.log("222222222");
-                    Modules.find({status:{$gt: 1}, catagory_id:sim.catagory_id}).sort({likes: -1}).then((course) => {
+                    Modules.aggregate([
+                        {
+                            $match: {
+                                status:{$gt: 1}, catagory_id:sim.catagory_id
+                            }
+                        },
+                        {
+                            $lookup:{
+                                from: "catagories",
+                                localField: "catagory_id",
+                                foreignField: "_id",
+                                as: "cat"
+                            }
+                        },
+                        {
+                            $unwind: "$cat"
+                        } ,
+                        {
+                            $sort: {
+                                likes: -1
+                            }
+                        }
+
+                    ]).then((course) => {
                         if(course.length > 0) {
                             console.log("found coursd");
                             res.json({
