@@ -3,3 +3,4 @@ uploads
 data
 logs
 .env
+assets/user_qr.png
