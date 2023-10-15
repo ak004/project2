@@ -77,11 +77,30 @@ exports.showattachement = function (req,res) {
 
 
 exports.home = function (req,res) {
-    console.log("the meunus: ", req.session.menus);
     res.render("index", {
         test:"testt",
         user:req.session.user,
         menu:req.session.menus
+    })
+}
+
+exports.home_page = function (req,res) {
+    Modules.aggregate([
+        {
+            $lookup:{
+                from: "video",
+                localField: "_id",
+                foreignField: "module_id",
+                as: "vid"
+            }
+        },
+    ]).then((courses) => {
+        res.render("home", {
+            test:"testt",
+            user:req.session.user,
+            menu:req.session.menus,
+            courses:courses
+        })
     })
 }
 

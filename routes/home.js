@@ -10,6 +10,9 @@ module.exports = function (app) {
     app.route('/').get(Tools.isLoggedIn,homecontroller.home);
     app.route('/').post(Tools.isLoggedIn,homecontroller.home);
 
+    app.route('/home').get(homecontroller.home_page);
+    app.route('/home').post(homecontroller.home_page);
+
     app.route('/login').get(homecontroller.login);
     app.route('/login').post(homecontroller.login);
     app.route('/api/login').post(homecontroller.login);
