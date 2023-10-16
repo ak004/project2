@@ -405,6 +405,7 @@ exports.get_course_details = function (req,res) {
                       image:1,
                       likes:1,
                       videos:1,
+                      user_id:1,
                       amount:"$price",
                       
                     no_of_vids: { $size: "$videos" },
