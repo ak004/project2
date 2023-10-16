@@ -437,7 +437,7 @@ exports.get_course_details = function (req,res) {
                         }else{
                             console.log("the data user_id",data[0].user_id);
                             console.log("the user_id",user._id);
-                            if(data[0].user_id === user._id) {
+                            if(data[0].user_id.toString() === user._id.toString()) {
                                 res.json({
                                     success:true,
                                     message: "Successfuly found the data",
