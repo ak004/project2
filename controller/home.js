@@ -78,7 +78,7 @@ exports.showattachement = function (req,res) {
 
 exports.home = function (req,res) {
     res.render("index", {
-        test:"testt",
+        test:"home",
         user:req.session.user,
         menu:req.session.menus
     })
@@ -210,7 +210,7 @@ exports.login =  async  function   (req,res)  {
 
 exports.logout = function (req,res) {
     req.session.destroy();
-    res.redirect("/");
+    res.redirect("/login");
 }
 
 exports.signup = function (req,res) {
