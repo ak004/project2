@@ -433,14 +433,25 @@ exports.get_course_details = function (req,res) {
                                 }
                             })
                         }else{
-                            res.json({
-                                success:true,
-                                message: "Successfuly found the data",
-                                record: {
-                                    data:data,
-                                    bought:false
-                                }
-                            })
+                            if(data.user_id == user._id) {
+                                res.json({
+                                    success:true,
+                                    message: "Successfuly found the data",
+                                    record: {
+                                        data:data,
+                                        bought:true
+                                    }
+                                })
+                            }else {
+                                res.json({
+                                    success:true,
+                                    message: "Successfuly found the data",
+                                    record: {
+                                        data:data,
+                                        bought:false
+                                    }
+                                })
+                            }
                         }
                     })
                   
