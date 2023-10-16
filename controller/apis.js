@@ -421,6 +421,7 @@ exports.get_course_details = function (req,res) {
                   }
                 }
               ]).then((data) => {
+                console.log("the data is: ",data);
                 if(data.length > 0) {
                     Bought_course.findOne({user_id:user._id, module_id: new  mongoose.Types.ObjectId(req.body.course_id)}).then((bought) => {
                         if(bought) {
@@ -433,7 +434,7 @@ exports.get_course_details = function (req,res) {
                                 }
                             })
                         }else{
-                            if(data.user_id == user._id) {
+                            if(data[0].user_id == user._id) {
                                 res.json({
                                     success:true,
                                     message: "Successfuly found the data",
