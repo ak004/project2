@@ -470,7 +470,7 @@ exports.pages = function (req,res) {
                 data:data,
                 status: req.body.status2,
                 menu:menuss,
-                menu:req.session.menus
+                // menu:req.session.menus
                 })
             })
         })
@@ -482,7 +482,7 @@ exports.pages = function (req,res) {
                     data:data,
                     status: "",
                     menu:menuss,
-                    menu:req.session.menus
+                    // menu:req.session.menus
                 })
             })
         })
