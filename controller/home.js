@@ -476,7 +476,7 @@ exports.pages = function (req,res) {
         })
     }else {
         Page.find({}).then((data) => {
-            Menu.find({status: 2}).then((menuss) => {
+            Menu.find().then((menuss) => {
                 res.render("page", {
                     user:req.session.user,
                     data:data,
