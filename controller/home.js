@@ -469,8 +469,8 @@ exports.pages = function (req,res) {
                 user:req.session.user,
                 data:data,
                 status: req.body.status2,
-                menu:menuss,
-                // menu:req.session.menus
+                menuss:menuss,
+                menu:req.session.menus
                 })
             })
         })
@@ -481,8 +481,8 @@ exports.pages = function (req,res) {
                     user:req.session.user,
                     data:data,
                     status: "",
-                    menu:menuss,
-                    // menu:req.session.menus
+                    menuss:menuss,
+                    menu:req.session.menus
                 })
             })
         })
