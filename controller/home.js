@@ -20,6 +20,7 @@ const multer = require('multer');
 const upload = multer();
 const path = require('path');
 const qrcode = require('qrcode');
+var defalult_data = require("../startupData");
 
 var smtpConfig = {
     host: 'smtp.gmail.com',
@@ -84,7 +85,59 @@ exports.home = function (req,res) {
     })
 }
 
-exports.home_page = function (req,res) {
+exports.home_page = async function (req,res) {
+    await User.find({}).then((data)=> {
+        if(data.length==0){
+            var menus_data = defalult_data.menus;
+            // save the menus first
+             menus_data.forEach(element => {
+                Menu.findOneAndUpdate({name:element.name},element,{upsert:true}).then((s)=>{
+                    console.log("menu saved")
+                })
+            })
+            // save the pages second
+            var pages_data = defalult_data.pages;
+            pages_data.forEach(element => {
+                Page.findOneAndUpdate({name:element.name},element,{upsert:true}).then((s)=>{
+                    console.log("pages saved")
+                })
+            })
+
+            // save the catagores  
+            var catagores = defalult_data.catagores;
+            catagores.forEach(element => {
+                Catagories.findOneAndUpdate({title:element.title},element,{upsert:true}).then((s)=>{
+                    console.log("catagores saved")
+                })
+            })
+
+            // save the modules    
+            var modules = defalult_data.modules;
+            modules.forEach(element => {
+                Modules.findOneAndUpdate({title:element.title},element,{upsert:true}).then((s)=>{
+                    console.log("modules saved")
+                })
+            })
+
+             // save the vids  
+             var vids = defalult_data.vidoes;
+             vids.forEach(element => {
+                Video.findOneAndUpdate({title:element.title},element,{upsert:true}).then((s)=>{
+                     console.log("Video saved")
+                 })
+             })
+
+
+               // save the users  
+               var users = defalult_data.users;
+               users.forEach(element => {
+                User.findOneAndUpdate({user_name:element.user_name},element,{upsert:true}).then((s)=>{
+                       console.log("User saved")
+                   })
+               })
+        }
+    })
+
     Modules.aggregate([
         {
             $lookup:{
@@ -277,7 +330,7 @@ exports.send_verification = function(req, res) {
         }else {
             var code = Math.floor(100000 + Math.random() * 900000);
             console.log("the code is:", code);
-                send(req.body.email,code);
+                // send(req.body.email,code);
                 res.json({
                     success:true,
                     email:req.body.email,
