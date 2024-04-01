@@ -6,6 +6,7 @@ const Video = require('../model/video');
 const Catagories = require('../model/catagory')
 const Menu = require('../model/menu');
 const Page = require('../model/page');
+const Resources = require('../model/resource.js')
 const Qr_code_session = require('../model/qr_code_session')
 const saltRounds = 10;
 const fs            = require('fs-extra')
@@ -635,7 +636,7 @@ exports.catagories = function (req,res) {
          Catagories.aggregate([
             filter,
         ]).then((data) => {
-            res.render("catagories", {
+            res.render("course_catagories", {
                 user:req.session.user,
                 data:data,
                 status: req.body.status2,
@@ -663,7 +664,7 @@ exports.catagories = function (req,res) {
 
 exports.new_catagory = function (req,res) {
     if (Object.keys(req.body).length > 0) {
-
+        console.log("the vody is: ", req.body);
         if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
             var img = "";
             var liner2 = "";
@@ -683,6 +684,7 @@ exports.new_catagory = function (req,res) {
                 title: req.body.r_title,
                 discription: req.body.desc,
                 status: req.body.status == "active" ? 2 : 0,
+                type:req.body.type,
                 image:liner2
             });
             save_restura.save().then((svf) => {
@@ -710,6 +712,7 @@ exports.new_catagory = function (req,res) {
                                 title: req.body.r_title,
                                 discription: req.body.desc,
                                 status: req.body.status == "active" ? 2 : 0,
+                                type:req.body.type,
                                 image:img
                             }
                         }).then((upd) => {
@@ -1009,6 +1012,185 @@ exports.save_video = function (req,res) {
 
         }
     } 
+}
+
+
+exports.resources = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var filter = {
+            "$match": {}
+        };
+        if(req.body.status2 == "suspended") {
+            filter["$match"]["status"] = 0;
+        }else if(req.body.status2 == "active") {
+            filter["$match"]["status"] = 2;
+        }
+      
+        Resources.aggregate([
+            filter,
+            {
+                $lookup:{
+                    from: "catagories",
+                    localField: "catagory_id",
+                    foreignField: "_id",
+                    as: "cat"
+                }
+            },
+            {
+                $unwind: "$cat"
+            },
+        ]).then((data) => {
+            Catagories.find({type:"resources"}).then((cat) => {
+            res.render("resources", {
+                user:req.session.user,
+                data:data,
+                status: req.body.status2,
+                cat:cat,
+                menu:req.session.menus
+                })
+            })
+        })
+    }else {
+        Resources.aggregate([
+            {
+                $lookup:{
+                    from: "catagories",
+                    localField: "catagory_id",
+                    foreignField: "_id",
+                    as: "cat"
+                }
+            },
+            {
+                $unwind: "$cat"
+            },
+
+        ]).then((data) => {
+            Catagories.find({type:"resources"}).then((cat) => {
+                res.render("resources", {
+                    user:req.session.user,
+                    data:data,
+                    status: "",
+                    cat:cat,
+                    menu:req.session.menus
+                })
+            })
+        })
+    }
+}
+
+
+exports.new_resources = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        console.log("the body is:", req.body);
+        console.log("the body files :", req.files);
+        if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
+            var files =  req.files;
+            var urls = "";
+            var ext = "";
+            files.forEach( async (imagess)  => {
+                var att = "";
+                var url = "";
+                var  originalname =  imagess.originalname;
+                var extention = originalname.split(".")[1];
+                ext = extention;
+                    var image_name =tokenGenerator(29);
+                    url = "./resources/" + image_name + '.'+extention;
+                    att = "resources/" + image_name + '.' + extention;
+               
+                     Tools.uploadtos3(imagess,att);
+                    console.log("check-------attach-----", att);
+                    urls = att;
+              })
+
+              Catagories.findOne({_id: req.body.menu_id}).then((men) => {
+                if(men) {
+                    var save_restura = new Resources({
+                        title: req.body.r_name,
+                        url:urls,
+                        catagory_id:men._id,
+                        desc:req.body.desc,
+                        extenstion:ext,
+                        created_by:req.session.user._id,
+                        status: req.body.status == "active" ? 2 : 0,
+                    });
+                    save_restura.save().then((svf) => {
+                        if (svf) {
+                          res.redirect('/resources')
+                        }
+                     })
+                }else {
+                    res.redirect('/resources')
+                }
+            })
+          
+        }else {
+            Resources.findOne({_id:req.body._id}).then((r) => {
+                if(r) {
+                    Catagories.findOne({_id: req.body.menu_id}).then((men) => {
+                        if(men) {
+                            var files =  req.files;
+                            var urls = "";
+                            var ext = "";
+                            files.forEach( async (imagess)  => {
+                                var att = "";
+                                var url = "";
+                                var  originalname =  imagess.originalname;
+                                var extention = originalname.split(".")[1];
+                                ext = extention;
+                                    var image_name =tokenGenerator(29);
+                                    url = "./resources/" + image_name + '.'+extention;
+                                    att = "resources/" + image_name + '.' + extention;
+                               
+                                     Tools.uploadtos3(imagess,att);
+                                    console.log("check-------attach-----", att);
+                                    urls = att;
+                              })
+
+                              
+                            Resources.findByIdAndUpdate({_id: r._id}, {
+                            $set:{
+                                title: req.body.r_name,
+                                url:urls,
+                                catagory_id:men._id,
+                                desc:req.body.desc,
+                                extenstion:ext,
+                                created_by:req.session.user._id,
+                                status: req.body.status == "active" ? 2 : 0,
+                            }
+                        }).then((upd) => {
+                            if(upd) {
+                                res.redirect('/resources')
+                            }else {
+                                res.json({
+                                    success: false,
+                                    message: "Couldnt update"
+                                })
+                            }
+                        })
+                    }else {
+                        res.json({
+                            success: false,
+                            message: "Couldnt update"
+                        })
+                    }
+                })
+
+                }else {
+                    res.json({
+                        success: false,
+                        message: "Couldnt find the catagory"
+                    })
+                }
+            })
+        }
+
+    }else {
+       
+        res.json({
+            success: false,
+            message: "no data found"
+        })
+    }
 }
 
 

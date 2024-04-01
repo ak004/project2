@@ -64,6 +64,11 @@ module.exports = function (app) {
     app.route('/completeUpload').post(Tools.isLoggedIn,homecontroller.completeUpload);
     app.route('/delete_video').post(Tools.isLoggedIn,homecontroller.delete_video);
 
+    app.route('/resources').get(Tools.isLoggedIn,homecontroller.resources);
+    app.route('/resources').post(Tools.isLoggedIn,homecontroller.resources);
+    app.route('/new_resources').post(Tools.isLoggedIn,homecontroller.new_resources);
+
+
 
     //
     app.route('/api/qr_validation').post(homecontroller.qr_validation);

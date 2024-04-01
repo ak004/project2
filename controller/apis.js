@@ -19,7 +19,7 @@ exports.get_cat = function (req,res) {
     console.log("yep the route that the app is calling is CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
-            Catagories.find({status:{$gt: 1}}).then((cat) => {
+            Catagories.find({status:{$gt: 1}, type: "courses"}).then((cat) => {
                 if(cat.length > 0) {
                     console.log("reached herer ",cat.length);
                     res.json({
