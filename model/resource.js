@@ -31,6 +31,10 @@ resource_Schema = new Schema({
         type:Number,
         default: 2
     }, 
+    no_download: {
+        type:Number,
+        default: 0
+    }, 
     created_at: {
         type: Date,
         default: Date.now,

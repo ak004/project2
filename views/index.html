@@ -15,7 +15,7 @@
                             <svg class="svg-icon text-primary mr-3" style="margin-top: 10px; margin-left: 20px;"  width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>
-                            <h3><span class="counter">3</span></h3>
+                            <h3><span class="counter"><%=total_course%></span></h3>
                         </div>
                       
                         <!-- <div class="d-flex align-items-center justify-content-between mt-1">
@@ -40,7 +40,7 @@
                                 <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
                                 <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
                             </svg>
-                            <h3><span class="counter">3</span></h3>
+                            <h3><span class="counter"><%=total_vids%></span></h3>
                         </div>
                         <!-- <div class="d-flex align-items-center justify-content-between mt-1">
                             <p class="mb-0">Total Revenue</p>
@@ -63,7 +63,7 @@
                             <svg class="svg-icon text-success mr-3" style="margin-top: 10px; margin-left: 20px;"  width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>
                             </svg>
-                            <h3><span class="counter">3</span></h3>
+                            <h3><span class="counter"><%=total_bought_course%></span></h3>
                         </div>
                         <!-- <div class="d-flex align-items-center justify-content-between mt-1">
                             <p class="mb-0">Total Revenue</p>
@@ -83,7 +83,7 @@
                             <span class="badge badge-info">Anual</span>
                         </div>
                              
-                            <h3 style="color: green;">$ <span class="counter">3</span></h3>
+                            <h3 style="color: green;">$ <span class="counter">0</span></h3>
                         <!-- <div class="d-flex align-items-center justify-content-between mt-1">
                             <p class="mb-0">Total Revenue</p>
                             <span class="text-info">55%</span>
@@ -94,105 +94,50 @@
                     </div>
                 </div>
             </div>
+            
+
             <div class="col-xl-8">
+                <h4 class="card-title" style="margin-bottom: 20px;">Your courses</h4>
+
                 <div class="card-transparent card-block card-stretch card-height">
                     <div class="card-body p-0">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between">
-                                <div class="header-title">
-                                    <h4 class="card-title">Overview Progress</h4>
+                         
+                            <div class="row" style="justify-content: space-between;">
+                                <% cour.forEach(function(entry) { %>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body"> 
+                                            <div class="row" style="justify-content: space-between; margin-left: 10px; margin-right: 10px;" >
+                                                <h5 class="mb-3"><%=entry.title%></h5>
+                                                <div>
+                                                    <a href="#" class="btn bg-info-light"><%= entry.cat.title %></a>
+                                                </div>
+                                            </div>
+                                         
+                                            <p class="mb-3" style="margin-top: -20px;"><i class="las la-calendar-check mr-2"></i> <%= moment(entry.created_at).format("YYYY-MM-DD")%></p>
+                                            <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                                                <div class="col-md-3" style="display: flex; align-items: center;">
+                                                    <p style="color: red;margin: 0; text-align: center;"> Price: $<%=entry.price%></p>
+                                                </div>
+                                                <div class="col-md-5"  style="display: flex; align-items: center;" >
+                                                    <p style="color: green;margin: 0; text-align: center;" >Duriation:<%=entry.duration%> min</p>
+                                                </div>
+                                                <div class="col-md-4" style="display: flex; align-items: center;">
+                                                    <p style="color: blue;margin: 0; text-align: center;"> No Videos: <%=entry.no_of_vids%> </p>
+                                                </div>
+                                               </div>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                               
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+                                <%})%>
                             </div>
-                            <div class="card-body">
-                                <ul class="list-inline p-0 mb-0">
-                                    <li class="mb-1">
-                                        <div class="row">
-                                            <div class="col-sm-3">
-                                                <p class="mb-0">UX / UI Design</p>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <div class="iq-progress-bar bg-secondary-light">
-                                                        <span class="bg-secondary iq-progress progress-1" data-percent="65"></span>
-                                                    </div>
-                                                    <span class="ml-3">65%</span>
-                                                </div>                                                                
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <div class="iq-media-group text-sm-right">
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/05.jpg" alt="">
-                                                    </a>
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/06.jpg" alt="">
-                                                    </a>
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/07.jpg" alt="">
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="mb-1">
-                                        <div class="d-flex align-items-center justify-content-between row">
-                                            <div class="col-sm-3">
-                                                <p class="mb-0">Development</p>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <div class="iq-progress-bar bg-primary-light">
-                                                        <span class="bg-primary iq-progress progress-1" data-percent="59"></span>
-                                                    </div>
-                                                    <span class="ml-3">59%</span>
-                                                </div>                                                                
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <div class="iq-media-group text-sm-right">
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/08.jpg" alt="">
-                                                    </a>
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/09.jpg" alt="">
-                                                    </a>
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/04.jpg" alt="">
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="d-flex align-items-center justify-content-between row">
-                                            <div class="col-sm-3">
-                                                <p class="mb-0">Testing</p>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <div class="iq-progress-bar bg-warning-light">
-                                                        <span class="bg-warning iq-progress progress-1" data-percent="78"></span>
-                                                    </div>
-                                                    <span class="ml-3">78%</span>
-                                                </div>                                                                
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <div class="iq-media-group text-sm-right">
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/01.jpg" alt="">
-                                                    </a>
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/02.jpg" alt="">
-                                                    </a>
-                                                    <a href="#" class="iq-media">
-                                                        <img class="img-fluid avatar-40 rounded-circle" src="images/user/03.jpg" alt="">
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    
+                          
+
+                           
                     </div>
                 </div>
             </div>
@@ -211,7 +156,7 @@
                 <div class="card-transparent mb-0">
                     <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
                         <div class="header-title">
-                            <h4 class="card-title">Current Projects</h4>
+                            <h4 class="card-title">Resources</h4>
                         </div>
                         <div class="card-header-toolbar d-flex align-items-center">
                             <div id="top-project-slick-arrow" class="slick-aerrow-block">
@@ -219,158 +164,44 @@
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <ul class="list-unstyled row top-projects mb-0">
-                            <li class="col-lg-4">                                    
+                        <div class="row">
+                            <% resource.forEach(function(entry) { %>
+                            <div class="col-md-4">
                                 <div class="card">
                                     <div class="card-body"> 
-                                        <h5 class="mb-3">Hotel Management App UI Kit</h5>
-                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
-                                        <div class="iq-progress-bar bg-secondary-light mb-4">
-                                            <span class="bg-secondary iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="iq-media-group">
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/01.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/02.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                            </div>
+                                        <div class="row" style="justify-content: space-between; margin-left: 10px; margin-right: 10px;" >
+                                            <h5 class="mb-3"><%=entry.title%></h5>
                                             <div>
-                                                <a href="#" class="btn bg-secondary-light">Design</a>
+                                                <a href="#" class="btn bg-info-light"> <%=entry.cat.title%></a>
                                             </div>
                                         </div>
+                                        <p class="mb-3" style="margin-top: -20px;"><i class="las la-calendar-check mr-2"></i>   <%= moment(entry.created_at).format("YYYY-MM-DD")%></p>
+                                        <div class="d-flex align-items-center   pt-3 border-top">
+                                            <div class="col-md-4" style="display: flex; align-items: center; justify-content: space-between;">
+                                                <div>
+                                                    <a href="#" class="btn bg-danger-light">  <%=entry.extenstion%></a>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6"  style="display: flex; align-items: center;" >
+                                                <center>
+                                                    <p style="color: green;margin: 0; text-align: center;" >downloads:  <%=entry.no_download%></p>
+
+                                                </center>
+                                            </div>
+                                            <div class="col-md-2" style="display: flex; align-items: center;">
+                                                <div>
+                                                    <a href="http://localhost:3000/<%=entry.url%>" class="btn bg-success-light"> View</a>
+                                                </div>
+                                            </div>
+                                           </div>
+                                        
                                     </div>
                                 </div>
-                            </li>
-                            <li class="col-lg-4">
-                                <div class="card">
-                                    <div class="card-body"> 
-                                        <h5 class="mb-3">General Improvement in pages</h5>
-                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
-                                        <div class="iq-progress-bar bg-info-light mb-4">
-                                            <span class="bg-info iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="iq-media-group">
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/05.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/06.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/07.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/08.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="btn bg-info-light">Testing</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="col-lg-4">
-                                <div class="card">
-                                    <div class="card-body"> 
-                                        <h5 class="mb-3">Product list view changes</h5>
-                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
-                                        <div class="iq-progress-bar bg-success-light mb-4">
-                                            <span class="bg-success iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="iq-media-group">
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/05.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/06.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="btn bg-success-light">SEO</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="col-lg-4">
-                                <div class="card">
-                                    <div class="card-body"> 
-                                        <h5 class="mb-3">Add Multiple theme options</h5>
-                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
-                                        <div class="iq-progress-bar bg-warning-light mb-4">
-                                            <span class="bg-warning iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="iq-media-group">
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/01.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/02.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="btn bg-warning-light">Development</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="col-lg-4">
-                                <div class="card">
-                                    <div class="card-body"> 
-                                        <h5 class="mb-3">Admin Panel Customization</h5>
-                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
-                                        <div class="iq-progress-bar bg-primary-light mb-4">
-                                            <span class="bg-primary iq-progress progress-1" data-percent="65"></span>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="iq-media-group">
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/01.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/02.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                                <a href="#" class="iq-media">
-                                                    <img src="images/user/04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                </a>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="btn bg-primary-light">Content</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
+                            </div>
+                            <%})%>  
+                            
+                        </div>
+                  
                     </div>
                 </div>
             </div>

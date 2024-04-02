@@ -67,6 +67,7 @@ module.exports = function (app) {
     app.route('/resources').get(Tools.isLoggedIn,homecontroller.resources);
     app.route('/resources').post(Tools.isLoggedIn,homecontroller.resources);
     app.route('/new_resources').post(Tools.isLoggedIn,homecontroller.new_resources);
+    app.route('/delete_resource').post(Tools.isLoggedIn,homecontroller.delete_resource);
 
 
 

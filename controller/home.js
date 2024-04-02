@@ -8,6 +8,7 @@ const Menu = require('../model/menu');
 const Page = require('../model/page');
 const Resources = require('../model/resource.js')
 const Qr_code_session = require('../model/qr_code_session')
+const Bought_course = require('../model/bought_course')
 const saltRounds = 10;
 const fs            = require('fs-extra')
 const mongoose = require('mongoose');
@@ -21,6 +22,7 @@ const multer = require('multer');
 const upload = multer();
 const path = require('path');
 const qrcode = require('qrcode');
+var moment = require("moment");
 var defalult_data = require("../startupData");
 
 var smtpConfig = {
@@ -79,11 +81,87 @@ exports.showattachement = function (req,res) {
 
 
 exports.home = function (req,res) {
-    res.render("index", {
-        test:"home",
-        user:req.session.user,
-        menu:req.session.menus
+        console.log("the  user,: ", new  mongoose.Types.ObjectId(req.session.user._id));
+    Modules.aggregate([
+        {
+            $match: {status: 2, user_id: new  mongoose.Types.ObjectId(req.session.user._id) }
+        },
+        {
+            $lookup:{
+                from: "catagories",
+                localField: "catagory_id",
+                foreignField: "_id",
+                as: "cat"
+            }
+        },
+        {
+            $unwind: "$cat"
+        },
+    ]).then((cour) => {
+        Video.find({status: 2, user_id:req.session.user._id}).then((vids) => {
+            Bought_course.aggregate([
+                
+                {
+                    $lookup:{
+                        from: "modules",
+                        localField: "module_id",
+                        foreignField: "_id",
+                        as: "mod"
+                    }
+                },
+                {
+                    $unwind: "$mod"
+                },
+                {
+                    $match: {
+                        "mod.user_id":new  mongoose.Types.ObjectId(req.session.user._id)
+                    }
+                }
+            ]).then((bou) => {
+
+                Resources.aggregate([
+                        {
+                            $match:{created_by: new  mongoose.Types.ObjectId(req.session.user._id)}
+                        },
+                        {
+                            $lookup:{
+                                from: "catagories",
+                                localField: "catagory_id",
+                                foreignField: "_id",
+                                as: "cat"
+                            }
+                        },
+                        {
+                            $unwind: "$cat"
+                        },
+                        {
+                            $sort: {no_download: -1}
+                        },
+                        {
+                            $limit: 3
+                        }
+
+                ]).then((resource) => {
+                var total_course = cour.length;
+                var total_vids = vids.length;
+                var total_bought_course = bou.length;
+
+                res.render("index", {
+                    test:"home",
+                    user:req.session.user,
+                    menu:req.session.menus,
+                    total_course,
+                    total_vids,
+                    total_bought_course,
+                    cour,
+                    moment,
+                    resource
+                })
+            })
+            })
+        })
     })
+   
 }
 
 exports.home_page = async function (req,res) {
@@ -375,6 +453,25 @@ exports.profile = function (req,res) {
 exports.updata_user_data = function (req,res) {
     User.find({email: req.body.email}).then((data) => {
         if(data.length > 0) {
+            console.log("the files", req.files);
+
+            var img = "";
+            var liner2 = "";
+            if(req.files.length > 0) {
+                req.files.forEach( async (imagess)  => {
+          
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./images/" + image_name + '.jpg';
+                        liner2 = "images/" + image_name + '.jpg';
+                   
+                         Tools.uploadtos3(imagess,liner2);
+                        console.log("check------------", liner2);
+                        img = liner2
+                  })
+      
+            }
+           
             let date = new Date(req.body.dob);
             User.findByIdAndUpdate({_id: data[0]._id},{
                 $set:{
@@ -384,6 +481,7 @@ exports.updata_user_data = function (req,res) {
                     martial_status:req.body.marital_status,
                     phone:req.body.phone,
                     dob: date.toISOString(),
+                    picture:liner2 == ""  ? data[0].picture : liner2,
                     address:req.body.address.trim()
                 }
             }).then(() => {
@@ -1138,8 +1236,8 @@ exports.new_resources = function (req,res) {
                                 var extention = originalname.split(".")[1];
                                 ext = extention;
                                     var image_name =tokenGenerator(29);
-                                    url = "./resources/" + image_name + '.'+extention;
-                                    att = "resources/" + image_name + '.' + extention;
+                                    url = "./attachments/resources" + image_name + '.'+extention;
+                                    att = "attachments/resources" + image_name + '.' + extention;
                                
                                      Tools.uploadtos3(imagess,att);
                                     console.log("check-------attach-----", att);
@@ -1192,6 +1290,29 @@ exports.new_resources = function (req,res) {
         })
     }
 }
+
+exports.delete_resource = async function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Resources.findOne({_id:req.body._id}).then((vidss) => {
+            if (vidss) {
+                (async () => {
+                //   const deleteee = await Tools.deleteImageFromS3(vidss.url);
+                Resources.findOneAndDelete({_id:req.body._id}).then(() => {
+                    res.json({
+                        success:true,
+                        message: "success"
+                    })
+                })
+
+                })();
+              } else {
+                // Handle the case when vidss is falsy (e.g., not defined or null)
+              }
+            
+        })
+    }
+}
+
 
 
 
