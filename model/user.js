@@ -68,9 +68,10 @@ userschema = new Schema({
         default: 0
     },
    
-    picture: String,
-    
- 
+    picture: {
+        type: String,
+        default:""
+    },
     created_at: {
         type: Date,
         default: Date.now

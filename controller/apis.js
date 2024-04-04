@@ -12,14 +12,19 @@ const Tools  = require('../tools.js');
 const AWS = require('aws-sdk');
 require('dotenv').config();
 const multer = require('multer');
-
+const Resources = require('../model/resource.js')
+var moment = require("moment");
 
 
 exports.get_cat = function (req,res) {
     console.log("yep the route that the app is calling is CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
-            Catagories.find({status:{$gt: 1}, type: "courses"}).then((cat) => {
+            var type = "courses";
+            if(req.body.resource != undefined && req.body.resource != null && req.body.resource != "" && req.body.resource == "true") {
+                type = "resources";
+            }
+            Catagories.find({status:{$gt: 1}, type: type}).then((cat) => {
                 if(cat.length > 0) {
                     console.log("reached herer ",cat.length);
                     res.json({
@@ -657,6 +662,144 @@ exports.change_to_completd = function (req,res) {
                     res.json({
                         success:false,
                         message:"Couldnt find any video please try again"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+
+exports.top_resources = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            var limit_query = {
+                $limit: 1000,
+            };
+            if (req.body.limit == "yes") {
+                limit_query["$limit"] = 4;
+            }
+            var filter = {
+                $match: {},
+            };
+            if(req.body.cat != "" && req.body.cat != undefined && req.body.cat  != null ) {
+                filter["$match"]["catagory_id"]  =  new mongoose.Types.ObjectId(req.body.cat)
+               
+            }
+
+            Resources.aggregate([
+                {
+                    $match: {
+                        status:{$gt: 1}
+                    }
+                },
+                filter,
+                {
+                    $lookup:{
+                        from: "catagories",
+                        localField: "catagory_id",
+                        foreignField: "_id",
+                        as: "cat"
+                    }
+                },
+                {
+                    $unwind: "$cat"
+                },
+                {
+                    $lookup:{
+                        from: "users",
+                        localField: "created_by",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+               
+                {
+                    $sort: {
+                        no_download: -1
+                    }
+                },
+                limit_query,
+                {
+                    $project: {
+                        _id: 1,
+                        title: 1,
+                        desc: 1,
+                        url: 1,
+                        created_at: 1,
+                        extenstion:1,
+                        catagory: "$cat.title",
+                        username: "$user.name",
+                        user_profile: "$user.picture",
+                        no_download: 1
+                    }
+                }
+            ]).then((resources) => {
+                resources = resources.map(resource => {
+                    resource.created_at = moment(resource.created_at).format('DD-MMM-YYYY h:mma');
+                    return resource;
+                });
+                res.json({
+                    success:true,
+                    record: {
+                        data:resources
+                    }
+                })
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+exports.update_download_count = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Resources.findOne({_id:req.body.res_id}).then((resources) => {
+                if(resources) {
+                    
+                    var users_downloaded = resources.users_downloaded;
+                    if(users_downloaded.includes(user._id)) {
+                        res.json({
+                            success:false,
+                            message:"You have already downloaded this resource"
+                        })
+                    }else {
+                        Resources.findOneAndUpdate(
+                            {_id: resources._id}, 
+                            { 
+                                $inc: {no_download: 1},
+                                $push: {users_downloaded: user._id} 
+                            }
+                        ).then((updt) => {
+                            if(updt) {
+                                res.json({
+                                    success:true,
+                                    message:"Download count updated"
+                                })
+                            }else {
+                                res.json({
+                                    success:false,
+                                    message:"Couldnt update the download count"
+                                })
+                            }
+                        })
+                    }
+                }else {
+                    res.json({
+                        success:false,
+                        message:"Couldnt find any resource"
                     })
                 }
             })
