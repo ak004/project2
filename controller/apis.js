@@ -14,7 +14,7 @@ require('dotenv').config();
 const multer = require('multer');
 const Resources = require('../model/resource.js')
 var moment = require("moment");
-
+var Chats = require('../model/chats.js');
 
 exports.get_cat = function (req,res) {
     console.log("yep the route that the app is calling is CORRECT")
@@ -811,3 +811,91 @@ exports.update_download_count = function (req,res) {
         }
     })
 }
+
+
+exports.get_chats = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            console.log("the is body for messages", req.body);
+            Chats.find({status:{$gt: 1}, user_id:user._id, course_id: new mongoose.Types.ObjectId(req.body.courseId) }).sort({_id: 1}).then((chats) => {
+                if(chats.length > 0) {
+                    res.json({
+                        success:true,
+                        record: {
+                            data:chats
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:true,
+                        record:{
+                            data:[]
+                        },
+                        message: "No ongoing course found"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+exports.send_chat = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            var chat = new Chats({
+                msg: req.body.msg,
+                type_user: "user",
+                user_id: user._id,
+                course_id: new mongoose.Types.ObjectId(req.body.course_id)
+            })
+            chat.save().then((svd) => {
+                if(svd) {
+                    var response_message = [
+                        "Hey ther how are you doing",
+                        "I hope you are doing well",
+                        "I am here to help you",
+                        "How may I help you",
+                        "Its a nice weather today isnt it"
+                    ];
+                    var random = Math.floor(Math.random() * response_message.length);
+                    var chat = new Chats({
+                        msg: response_message[random],
+                        type_user: "mentor",
+                        user_id: user._id,
+                        course_id: new mongoose.Types.ObjectId(req.body.course_id)
+                    })
+                    chat.save().then((svd) => {
+                        if(svd) {
+                            res.json({
+                                success:true,
+                                message:"Message sent and responsed"
+                            })
+                        }else {
+                            res.json({
+                                success:false,
+                                message:"Couldnt send message try again"
+                            })
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        message:"Couldnt send message try again"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+

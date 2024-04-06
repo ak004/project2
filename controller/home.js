@@ -1192,8 +1192,8 @@ exports.new_resources = function (req,res) {
                 var extention = originalname.split(".")[1];
                 ext = extention;
                     var image_name =tokenGenerator(29);
-                    url = "./resources/" + image_name + '.'+extention;
-                    att = "resources/" + image_name + '.' + extention;
+                    url = "./attachments/" + image_name + '.'+extention;
+                    att = "attachments/" + image_name + '.' + extention;
                
                      Tools.uploadtos3(imagess,att);
                     console.log("check-------attach-----", att);
@@ -1250,7 +1250,6 @@ exports.new_resources = function (req,res) {
                                 title: req.body.r_name,
                                 url:urls,
                                 catagory_id:men._id,
-                                desc:req.body.desc,
                                 extenstion:ext,
                                 created_by:req.session.user._id,
                                 status: req.body.status == "active" ? 2 : 0,
