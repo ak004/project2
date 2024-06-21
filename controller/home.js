@@ -205,7 +205,7 @@ exports.signup = function (req,res) {
             }else {
                 User.find({phone:req.body.phone}).then((data1) => {
                     if(data1.length > 0) {
-                        res.json({
+                        res.json({ 
                             success:false,
                             message:"Phone number already exists"
                         })
@@ -429,6 +429,11 @@ exports.delete_menu = function (req,res) {
 }
 
 
+exports.fetch_user = function (req,res) {
+    
+}
+
+
 
 exports.pages = function (req,res) {
     if (Object.keys(req.body).length > 0) {
@@ -457,6 +462,7 @@ exports.pages = function (req,res) {
     }else {
         Page.find({}).then((data) => {
             Menu.find({status: 2}).then((menuss) => {
+                console.log("the size is: ",menuss.length);
                 res.render("page", {
                     user:req.session.user,
                     data:data,
