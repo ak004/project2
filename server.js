@@ -34,7 +34,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   secret: 'resturant_secret',
-  maxAge: '1h'
+  maxAge: '18000'
 }));
 
 app.use('/images',express.static('images'))

@@ -10,6 +10,9 @@ module.exports = function (app) {
     app.route('/').get(Tools.isLoggedIn,homecontroller.home);
     app.route('/').post(Tools.isLoggedIn,homecontroller.home);
 
+    app.route('/home').get(homecontroller.home_page);
+    app.route('/home').post(homecontroller.home_page);
+
     app.route('/login').get(homecontroller.login);
     app.route('/login').post(homecontroller.login);
     app.route('/api/login').post(homecontroller.login);
@@ -60,6 +63,12 @@ module.exports = function (app) {
     app.route('/upload').post(Tools.isLoggedIn,homecontroller.upload);
     app.route('/completeUpload').post(Tools.isLoggedIn,homecontroller.completeUpload);
     app.route('/delete_video').post(Tools.isLoggedIn,homecontroller.delete_video);
+
+    app.route('/resources').get(Tools.isLoggedIn,homecontroller.resources);
+    app.route('/resources').post(Tools.isLoggedIn,homecontroller.resources);
+    app.route('/new_resources').post(Tools.isLoggedIn,homecontroller.new_resources);
+    app.route('/delete_resource').post(Tools.isLoggedIn,homecontroller.delete_resource);
+
 
 
     //

@@ -61,7 +61,7 @@
                         <div class="d-flex flex-wrap align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="custom-control custom-task custom-checkbox custom-control-inline">
-                                    <img src="images/user/01.jpg" class="img-fluid rounded-circle avatar-90 m-auto" alt="image">
+                                    <img src="<%=entry.thumb_img%>" class="img-fluid rounded-circle avatar-90 m-auto" alt="image">
                                 </div>
                                 <div>
                                     <h5 class="mb-2"> <%=entry.title%>  </h5>
@@ -75,8 +75,8 @@
                                 <div class="mt-md-0 mt-3" style="  float: right;">
                                   
                                         <a href="#" class="btn bg-secondary-light mr-3" onclick="deletevid('<%=entry._id %>')">Delete</a>
-                                        <a class="btn bg-secondary-light" data-toggle="collapse" href="#collapseEdit1" role="button" aria-expanded="false" aria-controls="collapseEdit1"><i class="ri-edit-box-line m-0"></i></a>
-                                        <% if (entry.path.length < 5) {%>
+                                        <a class="btn bg-secondary-light" data-toggle="collapse"  onclick="edit('<%=entry._id%>', '<%=entry.title%>','<%=entry.discription%>','<%=entry.thumb_img%>','<%=entry.module_id%>')" role="button" aria-expanded="false" aria-controls="collapseEdit1"><i class="ri-edit-box-line m-0"></i></a>
+                                        <% if (entry.path.length < 3) {%>
                                         <a href="#" class="btn bg-secondary-light mr-3" onclick="uploadvid('<%=entry._id %>')">Upload Video</a>
                                         <%}%>
                                </div>
@@ -260,6 +260,26 @@
 
 
 <script>
+
+
+function edit(id,title,desc,thumb_img,module_id) {
+        let status_val ;
+        if(status === "2") {
+            status_val = "active";
+        }else {
+            status_val = "suspended";
+        }
+        $('#_id').val(id);
+        $('#m_title').val(title);
+        $('#desc').val(desc);
+        $('#m_module').val(module_id).change();  
+        $('#status').val(status_val).change();
+        $('#new-project-modal').modal('show');
+    }
+
+
+
+
             var id_for_vid = "";
 
 function uploadvid(id) {
@@ -269,7 +289,7 @@ function uploadvid(id) {
     $('#new_vid_modal').modal('show');
 }
 
-
+ 
 
             const baseUrl = 'http://127.0.0.1:3000';
             const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunk size
@@ -486,27 +506,7 @@ $("#status2").change(function () {
                 });
     }
 
-    function edit_modeule(id,title,description,price,duration,status) {
-        let minss = duration.split(":")[1];
-        let hourss = duration.split(":")[0];
-        console.log("the duration", typeof(hourss));
-        console.log("the minn", typeof(minss));
-        let status_val ;
-        if(status === "2") {
-            status_val = "active";
-        }else {
-            status_val = "suspended";
-        }
-        $('#_id').val(id);
-        $('#m_title').val(title);
-        $('#price').val(price);
-        $('#hours').val(Number(hourss));
-        $('#min').val(Number(minss));
-        $('#desc').val(description);
-        $('#status').val(status_val).change();
-        $('#new-project-modal').modal('show');
-    }
-
+  
     function openmodel() {
         $('#_id').val("");
         $('#m_title').val("");

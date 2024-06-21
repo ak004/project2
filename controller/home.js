@@ -6,7 +6,9 @@ const Video = require('../model/video');
 const Catagories = require('../model/catagory')
 const Menu = require('../model/menu');
 const Page = require('../model/page');
+const Resources = require('../model/resource.js')
 const Qr_code_session = require('../model/qr_code_session')
+const Bought_course = require('../model/bought_course')
 const saltRounds = 10;
 const fs            = require('fs-extra')
 const mongoose = require('mongoose');
@@ -20,6 +22,8 @@ const multer = require('multer');
 const upload = multer();
 const path = require('path');
 const qrcode = require('qrcode');
+var moment = require("moment");
+var defalult_data = require("../startupData");
 
 var smtpConfig = {
     host: 'smtp.gmail.com',
@@ -77,10 +81,158 @@ exports.showattachement = function (req,res) {
 
 
 exports.home = function (req,res) {
-    res.render("index", {
-        test:"testt",
-        user:req.session.user,
-        menu:req.session.menus
+        console.log("the  user,: ", new  mongoose.Types.ObjectId(req.session.user._id));
+    Modules.aggregate([
+        {
+            $match: {status: 2, user_id: new  mongoose.Types.ObjectId(req.session.user._id) }
+        },
+        {
+            $lookup:{
+                from: "catagories",
+                localField: "catagory_id",
+                foreignField: "_id",
+                as: "cat"
+            }
+        },
+        {
+            $unwind: "$cat"
+        },
+    ]).then((cour) => {
+        Video.find({status: 2, user_id:req.session.user._id}).then((vids) => {
+            Bought_course.aggregate([
+                
+                {
+                    $lookup:{
+                        from: "modules",
+                        localField: "module_id",
+                        foreignField: "_id",
+                        as: "mod"
+                    }
+                },
+                {
+                    $unwind: "$mod"
+                },
+                {
+                    $match: {
+                        "mod.user_id":new  mongoose.Types.ObjectId(req.session.user._id)
+                    }
+                }
+            ]).then((bou) => {
+
+                Resources.aggregate([
+                        {
+                            $match:{created_by: new  mongoose.Types.ObjectId(req.session.user._id)}
+                        },
+                        {
+                            $lookup:{
+                                from: "catagories",
+                                localField: "catagory_id",
+                                foreignField: "_id",
+                                as: "cat"
+                            }
+                        },
+                        {
+                            $unwind: "$cat"
+                        },
+                        {
+                            $sort: {no_download: -1}
+                        },
+                        {
+                            $limit: 3
+                        }
+
+                ]).then((resource) => {
+                var total_course = cour.length;
+                var total_vids = vids.length;
+                var total_bought_course = bou.length;
+
+                res.render("index", {
+                    test:"home",
+                    user:req.session.user,
+                    menu:req.session.menus,
+                    total_course,
+                    total_vids,
+                    total_bought_course,
+                    cour,
+                    moment,
+                    resource
+                })
+            })
+            })
+        })
+    })
+   
+}
+
+exports.home_page = async function (req,res) {
+    await User.find({}).then((data)=> {
+        if(data.length==0){
+            var menus_data = defalult_data.menus;
+            // save the menus first
+             menus_data.forEach(element => {
+                Menu.findOneAndUpdate({name:element.name},element,{upsert:true}).then((s)=>{
+                    console.log("menu saved")
+                })
+            })
+            // save the pages second
+            var pages_data = defalult_data.pages;
+            pages_data.forEach(element => {
+                Page.findOneAndUpdate({name:element.name},element,{upsert:true}).then((s)=>{
+                    console.log("pages saved")
+                })
+            })
+
+            // save the catagores  
+            var catagores = defalult_data.catagores;
+            catagores.forEach(element => {
+                Catagories.findOneAndUpdate({title:element.title},element,{upsert:true}).then((s)=>{
+                    console.log("catagores saved")
+                })
+            })
+
+            // save the modules    
+            var modules = defalult_data.modules;
+            modules.forEach(element => {
+                Modules.findOneAndUpdate({title:element.title},element,{upsert:true}).then((s)=>{
+                    console.log("modules saved")
+                })
+            })
+
+             // save the vids  
+             var vids = defalult_data.vidoes;
+             vids.forEach(element => {
+                Video.findOneAndUpdate({title:element.title},element,{upsert:true}).then((s)=>{
+                     console.log("Video saved")
+                 })
+             })
+
+
+               // save the users  
+               var users = defalult_data.users;
+               users.forEach(element => {
+                User.findOneAndUpdate({user_name:element.user_name},element,{upsert:true}).then((s)=>{
+                       console.log("User saved")
+                   })
+               })
+        }
+    })
+
+    Modules.aggregate([
+        {
+            $lookup:{
+                from: "video",
+                localField: "_id",
+                foreignField: "module_id",
+                as: "vid"
+            }
+        },
+    ]).then((courses) => {
+        res.render("home", {
+            test:"testt",
+            user:req.session.user,
+            menu:req.session.menus,
+            courses:courses
+        })
     })
 }
 
@@ -190,7 +342,7 @@ exports.login =  async  function   (req,res)  {
 
 exports.logout = function (req,res) {
     req.session.destroy();
-    res.redirect("/");
+    res.redirect("/login");
 }
 
 exports.signup = function (req,res) {
@@ -257,7 +409,7 @@ exports.send_verification = function(req, res) {
         }else {
             var code = Math.floor(100000 + Math.random() * 900000);
             console.log("the code is:", code);
-                send(req.body.email,code);
+                // send(req.body.email,code);
                 res.json({
                     success:true,
                     email:req.body.email,
@@ -301,6 +453,25 @@ exports.profile = function (req,res) {
 exports.updata_user_data = function (req,res) {
     User.find({email: req.body.email}).then((data) => {
         if(data.length > 0) {
+            console.log("the files", req.files);
+
+            var img = "";
+            var liner2 = "";
+            if(req.files.length > 0) {
+                req.files.forEach( async (imagess)  => {
+          
+                    var url = "";
+                        var image_name =tokenGenerator(29);
+                        url = "./images/" + image_name + '.jpg';
+                        liner2 = "images/" + image_name + '.jpg';
+                   
+                         Tools.uploadtos3(imagess,liner2);
+                        console.log("check------------", liner2);
+                        img = liner2
+                  })
+      
+            }
+           
             let date = new Date(req.body.dob);
             User.findByIdAndUpdate({_id: data[0]._id},{
                 $set:{
@@ -310,6 +481,7 @@ exports.updata_user_data = function (req,res) {
                     martial_status:req.body.marital_status,
                     phone:req.body.phone,
                     dob: date.toISOString(),
+                    picture:liner2 == ""  ? data[0].picture : liner2,
                     address:req.body.address.trim()
                 }
             }).then(() => {
@@ -449,25 +621,24 @@ exports.pages = function (req,res) {
          Page.aggregate([
             filter,
         ]).then((data) => {
-            Menu.find({status: 2}).then((menuss) => {
+            Menu.find({}).then((menuss) => {
             res.render("page", {
                 user:req.session.user,
                 data:data,
                 status: req.body.status2,
-                menu:menuss,
+                menuss:menuss,
                 menu:req.session.menus
                 })
             })
         })
     }else {
         Page.find({}).then((data) => {
-            Menu.find({status: 2}).then((menuss) => {
-                console.log("the size is: ",menuss.length);
+            Menu.find().then((menuss) => {
                 res.render("page", {
                     user:req.session.user,
                     data:data,
                     status: "",
-                    menu:menuss,
+                    menuss:menuss,
                     menu:req.session.menus
                 })
             })
@@ -568,7 +739,7 @@ exports.catagories = function (req,res) {
          Catagories.aggregate([
             filter,
         ]).then((data) => {
-            res.render("catagories", {
+            res.render("course_catagories", {
                 user:req.session.user,
                 data:data,
                 status: req.body.status2,
@@ -596,7 +767,7 @@ exports.catagories = function (req,res) {
 
 exports.new_catagory = function (req,res) {
     if (Object.keys(req.body).length > 0) {
-
+        console.log("the vody is: ", req.body);
         if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
             var img = "";
             var liner2 = "";
@@ -616,6 +787,7 @@ exports.new_catagory = function (req,res) {
                 title: req.body.r_title,
                 discription: req.body.desc,
                 status: req.body.status == "active" ? 2 : 0,
+                type:req.body.type,
                 image:liner2
             });
             save_restura.save().then((svf) => {
@@ -643,6 +815,7 @@ exports.new_catagory = function (req,res) {
                                 title: req.body.r_title,
                                 discription: req.body.desc,
                                 status: req.body.status == "active" ? 2 : 0,
+                                type:req.body.type,
                                 image:img
                             }
                         }).then((upd) => {
@@ -816,15 +989,36 @@ exports.delete_modules = function (req,res) {
 exports.upload_videos = function (req,res) {
     
     if (Object.keys(req.body).length > 0) {
-
-    }else {
         Video.find({}).then((vids) => {
             var filter = {
                 "$match": {}
             };
-            if(req.session.user.role == "user") {
+            if(req.body.status2 == "suspended") {
+                filter["$match"]["status"] = 0;
+            }else if(req.body.status2 == "active") {
+                filter["$match"]["status"] = 2;
+            }
+             if(req.session.user.role == "user") {
                 filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
              }
+            Modules.aggregate([filter]).then((modules) => {
+                res.render("upload_videos", {
+                    user:req.session.user,
+                    data:vids,
+                    modules:modules,
+                    status: "",
+                    menu:req.session.menus
+                })
+            })
+        })
+    }else {
+        var filter = {
+            "$match": {}
+        };
+        if(req.session.user.role == "user") {
+            filter["$match"]["user_id"] = new  mongoose.Types.ObjectId(req.session.user._id);
+         }
+        Video.aggregate([filter]).then((vids) => {
             Modules.aggregate([filter]).then((modules) => {
                 res.render("upload_videos", {
                     user:req.session.user,
@@ -922,6 +1116,207 @@ exports.save_video = function (req,res) {
         }
     } 
 }
+
+
+exports.resources = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        var filter = {
+            "$match": {}
+        };
+        if(req.body.status2 == "suspended") {
+            filter["$match"]["status"] = 0;
+        }else if(req.body.status2 == "active") {
+            filter["$match"]["status"] = 2;
+        }
+      
+        Resources.aggregate([
+            filter,
+            {
+                $lookup:{
+                    from: "catagories",
+                    localField: "catagory_id",
+                    foreignField: "_id",
+                    as: "cat"
+                }
+            },
+            {
+                $unwind: "$cat"
+            },
+        ]).then((data) => {
+            Catagories.find({type:"resources"}).then((cat) => {
+            res.render("resources", {
+                user:req.session.user,
+                data:data,
+                status: req.body.status2,
+                cat:cat,
+                menu:req.session.menus
+                })
+            })
+        })
+    }else {
+        Resources.aggregate([
+            {
+                $lookup:{
+                    from: "catagories",
+                    localField: "catagory_id",
+                    foreignField: "_id",
+                    as: "cat"
+                }
+            },
+            {
+                $unwind: "$cat"
+            },
+
+        ]).then((data) => {
+            Catagories.find({type:"resources"}).then((cat) => {
+                res.render("resources", {
+                    user:req.session.user,
+                    data:data,
+                    status: "",
+                    cat:cat,
+                    menu:req.session.menus
+                })
+            })
+        })
+    }
+}
+
+
+exports.new_resources = function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        console.log("the body is:", req.body);
+        console.log("the body files :", req.files);
+        if(req.body._id == null || req.body._id == undefined || req.body._id == "" || req.body._id.length < 5) {
+            var files =  req.files;
+            var urls = "";
+            var ext = "";
+            files.forEach( async (imagess)  => {
+                var att = "";
+                var url = "";
+                var  originalname =  imagess.originalname;
+                var extention = originalname.split(".")[1];
+                ext = extention;
+                    var image_name =tokenGenerator(29);
+                    url = "./attachments/" + image_name + '.'+extention;
+                    att = "attachments/" + image_name + '.' + extention;
+               
+                     Tools.uploadtos3(imagess,att);
+                    console.log("check-------attach-----", att);
+                    urls = att;
+              })
+
+              Catagories.findOne({_id: req.body.menu_id}).then((men) => {
+                if(men) {
+                    var save_restura = new Resources({
+                        title: req.body.r_name,
+                        url:urls,
+                        catagory_id:men._id,
+                        desc:req.body.desc,
+                        extenstion:ext,
+                        created_by:req.session.user._id,
+                        status: req.body.status == "active" ? 2 : 0,
+                    });
+                    save_restura.save().then((svf) => {
+                        if (svf) {
+                          res.redirect('/resources')
+                        }
+                     })
+                }else {
+                    res.redirect('/resources')
+                }
+            })
+          
+        }else {
+            Resources.findOne({_id:req.body._id}).then((r) => {
+                if(r) {
+                    Catagories.findOne({_id: req.body.menu_id}).then((men) => {
+                        if(men) {
+                            var files =  req.files;
+                            var urls = "";
+                            var ext = "";
+                            files.forEach( async (imagess)  => {
+                                var att = "";
+                                var url = "";
+                                var  originalname =  imagess.originalname;
+                                var extention = originalname.split(".")[1];
+                                ext = extention;
+                                    var image_name =tokenGenerator(29);
+                                    url = "./attachments/resources" + image_name + '.'+extention;
+                                    att = "attachments/resources" + image_name + '.' + extention;
+                               
+                                     Tools.uploadtos3(imagess,att);
+                                    console.log("check-------attach-----", att);
+                                    urls = att;
+                              })
+
+                              
+                            Resources.findByIdAndUpdate({_id: r._id}, {
+                            $set:{
+                                title: req.body.r_name,
+                                url:urls,
+                                catagory_id:men._id,
+                                extenstion:ext,
+                                created_by:req.session.user._id,
+                                status: req.body.status == "active" ? 2 : 0,
+                            }
+                        }).then((upd) => {
+                            if(upd) {
+                                res.redirect('/resources')
+                            }else {
+                                res.json({
+                                    success: false,
+                                    message: "Couldnt update"
+                                })
+                            }
+                        })
+                    }else {
+                        res.json({
+                            success: false,
+                            message: "Couldnt update"
+                        })
+                    }
+                })
+
+                }else {
+                    res.json({
+                        success: false,
+                        message: "Couldnt find the catagory"
+                    })
+                }
+            })
+        }
+
+    }else {
+       
+        res.json({
+            success: false,
+            message: "no data found"
+        })
+    }
+}
+
+exports.delete_resource = async function (req,res) {
+    if (Object.keys(req.body).length > 0) {
+        Resources.findOne({_id:req.body._id}).then((vidss) => {
+            if (vidss) {
+                (async () => {
+                //   const deleteee = await Tools.deleteImageFromS3(vidss.url);
+                Resources.findOneAndDelete({_id:req.body._id}).then(() => {
+                    res.json({
+                        success:true,
+                        message: "success"
+                    })
+                })
+
+                })();
+              } else {
+                // Handle the case when vidss is falsy (e.g., not defined or null)
+              }
+            
+        })
+    }
+}
+
 
 
 

@@ -39,12 +39,16 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <form id="personal_info_form" name="personal_info_form" action="/updata_user_data" method="post" enctype="multipart/form-data">
+                                <form action="/updata_user_data" method="post" enctype="multipart/form-data">
                                     <div class="form-group row align-items-center">
                                         <div class="col-md-12">
                                         <div class="profile-img-edit">
                                             <div class="crm-profile-img-edit">
-                                                <img id="profile-pic" class="crm-profile-pic rounded-circle avatar-100" src="images/user/profile-img.png" alt="profile-pic">
+                                                <%if (user.picture == undefined || user.picture == "" ) {%>
+                                                    <img id="profile-pic" class="crm-profile-pic rounded-circle avatar-100" src="images/user/profile-img.png" alt="profile-pic">
+                                                    <%}else {%>
+                                                    <img id="profile-pic" class="crm-profile-pic rounded-circle avatar-100" src="<%=user.picture%>" alt="profile-pic">
+                                                        <%}%>
                                                 <div class="crm-p-image bg-primary">
                                                     <i class="las la-pen upload-button"></i>
                                                     <input id="file-upload" name="image" class="file-upload" type="file" accept="image/*">

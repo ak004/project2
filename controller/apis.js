@@ -12,14 +12,19 @@ const Tools  = require('../tools.js');
 const AWS = require('aws-sdk');
 require('dotenv').config();
 const multer = require('multer');
-
-
+const Resources = require('../model/resource.js')
+var moment = require("moment");
+var Chats = require('../model/chats.js');
 
 exports.get_cat = function (req,res) {
     console.log("yep the route that the app is calling is CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
         if(user) {
-            Catagories.find({status:{$gt: 1}}).then((cat) => {
+            var type = "courses";
+            if(req.body.resource != undefined && req.body.resource != null && req.body.resource != "" && req.body.resource == "true") {
+                type = "resources";
+            }
+            Catagories.find({status:{$gt: 1}, type: type}).then((cat) => {
                 if(cat.length > 0) {
                     console.log("reached herer ",cat.length);
                     res.json({
@@ -42,6 +47,61 @@ exports.get_cat = function (req,res) {
             })
         }else {
             console.log("the user does not exits");
+            res.json({
+                success:false,
+                message: "Couldnt find user try login again"
+            })
+        }
+    })
+}
+
+exports.top_mentors = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Modules.aggregate([
+                {
+                    $group: {
+                        _id: "$user_id",
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { count: -1 }
+                },
+                {
+                    $limit: 4
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "_id",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $project: {
+                        _id: "$user._id",
+                        name: "$user.name",
+                        moduleCount: "$count"
+                    }
+                }
+            
+            ]).then((mentors) => {
+                if(mentors.length > 0) {
+                    res.json({
+                        success:true,
+                        message: "Successfuly found the data",
+                        record: {
+                            data:mentors
+                        }
+                    })
+                }
+            })
+        }else {
             res.json({
                 success:false,
                 message: "Couldnt find user try login again"
@@ -153,6 +213,83 @@ exports.trending_course = function (req,res) {
             })
         }
     })
+}
+
+exports.similar_course = function (req,res) {
+    
+    console.log("000000000000000000", req.body);
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            console.log("11111111111");
+            Modules.findOne({_id:req.body.cat_id }).then((sim) => {
+                if(sim) {
+                    console.log("222222222");
+                    Modules.aggregate([
+                        {
+                            $match: {
+                                status:{$gt: 1}, catagory_id:sim.catagory_id
+                            }
+                        },
+                        {
+                            $lookup:{
+                                from: "catagories",
+                                localField: "catagory_id",
+                                foreignField: "_id",
+                                as: "cat"
+                            }
+                        },
+                        {
+                            $unwind: "$cat"
+                        } ,
+                        {
+                            $lookup:{
+                                from: "users",
+                                localField: "user_id",
+                                foreignField: "_id",
+                                as: "mentor"
+                            }
+                        },
+                        {
+                            $unwind: "$mentor"
+                        },
+                        {
+                            $sort: {
+                                likes: -1
+                            }
+                        }
+
+                    ]).then((course) => {
+                        if(course.length > 0) {
+                            console.log("found coursd");
+                            res.json({
+                                success:true,
+                                message: "Successfuly found the data",
+                                record: {
+                                    data:course
+                                }
+                            })
+                        }else {
+                            res.json({
+                                success:false,
+                                message: "Couldnt find any course wait for upload"
+                            })
+                        }
+                    })
+                }else{
+                    res.json({
+                        success:false,
+                        message: "Couldnt find any course wait for upload"
+                    }) 
+                }
+            })
+       
+        }else {
+            res.json({
+                success:false,
+                message: "Couldnt find user try login again"
+            })
+        }
+    }) 
 }
 
 exports.all_trending_course = function (req,res) {
@@ -273,6 +410,7 @@ exports.get_course_details = function (req,res) {
                       image:1,
                       likes:1,
                       videos:1,
+                      user_id:1,
                       amount:"$price",
                       
                     no_of_vids: { $size: "$videos" },
@@ -289,6 +427,7 @@ exports.get_course_details = function (req,res) {
                   }
                 }
               ]).then((data) => {
+                console.log("the data is: ",data);
                 if(data.length > 0) {
                     Bought_course.findOne({user_id:user._id, module_id: new  mongoose.Types.ObjectId(req.body.course_id)}).then((bought) => {
                         if(bought) {
@@ -301,14 +440,25 @@ exports.get_course_details = function (req,res) {
                                 }
                             })
                         }else{
-                            res.json({
-                                success:true,
-                                message: "Successfuly found the data",
-                                record: {
-                                    data:data,
-                                    bought:false
-                                }
-                            })
+                            if(data[0].user_id.toString() === user._id.toString()) {
+                                res.json({
+                                    success:true,
+                                    message: "Successfuly found the data",
+                                    record: {
+                                        data:data,
+                                        bought:true
+                                    }
+                                })
+                            }else {
+                                res.json({
+                                    success:true,
+                                    message: "Successfuly found the data",
+                                    record: {
+                                        data:data,
+                                        bought:false
+                                    }
+                                })
+                            }
                         }
                     })
                   
@@ -523,3 +673,229 @@ exports.change_to_completd = function (req,res) {
         }
     })
 }
+
+
+exports.top_resources = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            var limit_query = {
+                $limit: 1000,
+            };
+            if (req.body.limit == "yes") {
+                limit_query["$limit"] = 4;
+            }
+            var filter = {
+                $match: {},
+            };
+            if(req.body.cat != "" && req.body.cat != undefined && req.body.cat  != null ) {
+                filter["$match"]["catagory_id"]  =  new mongoose.Types.ObjectId(req.body.cat)
+               
+            }
+
+            Resources.aggregate([
+                {
+                    $match: {
+                        status:{$gt: 1}
+                    }
+                },
+                filter,
+                {
+                    $lookup:{
+                        from: "catagories",
+                        localField: "catagory_id",
+                        foreignField: "_id",
+                        as: "cat"
+                    }
+                },
+                {
+                    $unwind: "$cat"
+                },
+                {
+                    $lookup:{
+                        from: "users",
+                        localField: "created_by",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+               
+                {
+                    $sort: {
+                        no_download: -1
+                    }
+                },
+                limit_query,
+                {
+                    $project: {
+                        _id: 1,
+                        title: 1,
+                        desc: 1,
+                        url: 1,
+                        created_at: 1,
+                        extenstion:1,
+                        catagory: "$cat.title",
+                        username: "$user.name",
+                        user_profile: "$user.picture",
+                        no_download: 1
+                    }
+                }
+            ]).then((resources) => {
+                resources = resources.map(resource => {
+                    resource.created_at = moment(resource.created_at).format('DD-MMM-YYYY h:mma');
+                    return resource;
+                });
+                res.json({
+                    success:true,
+                    record: {
+                        data:resources
+                    }
+                })
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+exports.update_download_count = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            Resources.findOne({_id:req.body.res_id}).then((resources) => {
+                if(resources) {
+                    
+                    var users_downloaded = resources.users_downloaded;
+                    if(users_downloaded.includes(user._id)) {
+                        res.json({
+                            success:false,
+                            message:"You have already downloaded this resource"
+                        })
+                    }else {
+                        Resources.findOneAndUpdate(
+                            {_id: resources._id}, 
+                            { 
+                                $inc: {no_download: 1},
+                                $push: {users_downloaded: user._id} 
+                            }
+                        ).then((updt) => {
+                            if(updt) {
+                                res.json({
+                                    success:true,
+                                    message:"Download count updated"
+                                })
+                            }else {
+                                res.json({
+                                    success:false,
+                                    message:"Couldnt update the download count"
+                                })
+                            }
+                        })
+                    }
+                }else {
+                    res.json({
+                        success:false,
+                        message:"Couldnt find any resource"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+
+exports.get_chats = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            console.log("the is body for messages", req.body);
+            Chats.find({status:{$gt: 1}, user_id:user._id, course_id: new mongoose.Types.ObjectId(req.body.courseId) }).sort({_id: 1}).then((chats) => {
+                if(chats.length > 0) {
+                    res.json({
+                        success:true,
+                        record: {
+                            data:chats
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:true,
+                        record:{
+                            data:[]
+                        },
+                        message: "No ongoing course found"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+exports.send_chat = function (req,res) {
+    User.findOne({ _id:req.body.user_id}).then((user) => {
+        if(user) {
+            var chat = new Chats({
+                msg: req.body.msg,
+                type_user: "user",
+                user_id: user._id,
+                course_id: new mongoose.Types.ObjectId(req.body.course_id)
+            })
+            chat.save().then((svd) => {
+                if(svd) {
+                    var response_message = [
+                        "Hey ther how are you doing",
+                        "I hope you are doing well",
+                        "I am here to help you",
+                        "How may I help you",
+                        "Its a nice weather today isnt it"
+                    ];
+                    var random = Math.floor(Math.random() * response_message.length);
+                    var chat = new Chats({
+                        msg: response_message[random],
+                        type_user: "mentor",
+                        user_id: user._id,
+                        course_id: new mongoose.Types.ObjectId(req.body.course_id)
+                    })
+                    chat.save().then((svd) => {
+                        if(svd) {
+                            res.json({
+                                success:true,
+                                message:"Message sent and responsed"
+                            })
+                        }else {
+                            res.json({
+                                success:false,
+                                message:"Couldnt send message try again"
+                            })
+                        }
+                    })
+                }else {
+                    res.json({
+                        success:false,
+                        message:"Couldnt send message try again"
+                    })
+                }
+            })
+        }else {
+            res.json({
+                success:false,
+                message:"User does not exits"
+            })
+        }
+    })
+}
+
+
