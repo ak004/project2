@@ -48,9 +48,17 @@ tranporter.verify((error1, success) => {
 
 
 exports.showimage = function (req,res) {
+    try {
+        const readstreamm =  Tools.getStreamImage("tutoring_images/images/"+ req.params.key);
+        readstreamm.pipe(res)
+    }catch (e) {
+        console.log("the error", e);
+        res.status(404).json({
+            success:false,
+            message:"Something went wrong"
+        }) 
+    }
 
-    const readstreamm =  Tools.getStreamImage("tutoring_images/images/"+ req.params.key);
-    readstreamm.pipe(res)
 }
 
 

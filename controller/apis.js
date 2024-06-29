@@ -15,7 +15,11 @@ const multer = require('multer');
 const Resources = require('../model/resource.js')
 var moment = require("moment");
 var Chats = require('../model/chats.js');
+const OpenAI = require('openai');
 
+const openai = new OpenAI({
+    apiKey: process.env.OPEN_AI_API2, // This is the default and can be omitted
+  });
 exports.get_cat = function (req,res) {
     console.log("yep the route that the app is calling is CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
@@ -853,8 +857,9 @@ exports.send_chat = function (req,res) {
                 user_id: user._id,
                 course_id: new mongoose.Types.ObjectId(req.body.course_id)
             })
-            chat.save().then((svd) => {
+            chat.save().then( async(svd) => {
                 if(svd) {
+                   var response = await generateResponse(req.body.msg)
                     var response_message = [
                         "Hey ther how are you doing",
                         "I hope you are doing well",
@@ -899,3 +904,30 @@ exports.send_chat = function (req,res) {
 }
 
 
+
+exports.test_chat =  async function (req,res) {
+    var response = await generateResponse(req.body.msg);
+    console.log("-----------------the response is", response);
+    res.json({
+        success:true,
+        message:"Message sent and responsed",
+        response: response
+    })
+}
+
+async function generateResponse(message) {
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [{ role: 'user', content: message}],
+        model: 'gpt-3.5-turbo',
+        max_tokens: 150  // Adjust max_tokens as per your needs
+      });
+      console.log('Generated response:', completion.data.choices[0].text.trim());
+      console.log('Generated response:', completion);
+  
+      return completion.data.choices[0].text.trim();
+    } catch (error) {
+      console.error('Error fetching response from OpenAI API:', error);
+      return 'Error generating response';
+    }
+  }

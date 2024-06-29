@@ -41,6 +41,10 @@ app.use('/images',express.static('images'))
 
 require("./routes/home")(app);
 require("./routes/apis")(app);
+app.use((err, req, res, next) => {
+  console.error("FROM MIDDLEWARE----------------------",err.stack);
+  res.status(500).send('Something broke!');
+});
 
 const db = "mongodb://0.0.0.0:27017/project2"
 
@@ -63,11 +67,32 @@ connectDB();
 
 
 
-
 app.get("*", function (req, res) {
     res.render("pages-error");
   });
   
+
+  // Error-handling middleware
+app.use((err, req, res, next) => {
+  console.error("FROM MIDDLEWARE----------------------", err.stack);
+  res.status(500).send('Something broke!');
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error("Uncaught Exception: ", err.stack);
+  // Optionally exit the process
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Optionally exit the process
+  process.exit(1);
+});
+
+
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });

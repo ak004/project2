@@ -133,7 +133,7 @@ s3.putObject(params, function (err, data) {
       accessKeyId: process.env.ACCESS_KEY,
       secretAccessKey: process.env.SECRET_KEY,
   });
-
+    console.log("the file key",filekey);
   var s3 = new AWS.S3();
 
   const downloadParams = {
@@ -164,6 +164,7 @@ s3.putObject(params, function (err, data) {
           const defaultImage = "path/to/default/image.jpg";
           return fs.createReadStream(defaultImage);
       } else {
+        console.log("the --------------error",error);
           // Handle other errors by throwing or logging them
           throw error;
       }

@@ -17,4 +17,5 @@ module.exports = function (app) {
     app.route('/api/update_download_count').post(apis.update_download_count);
     app.route('/api/get_chats').post(apis.get_chats);
     app.route('/api/send_chat').post(apis.send_chat);
+    app.route('/api/test_chat').post(apis.test_chat);
 }
