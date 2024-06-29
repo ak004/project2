@@ -73,106 +73,106 @@ var pages = [
 
 
 var catagores = [
-    {
-        _id: '656ee679400fff4fbecd45d6',
-        title: 'Design',
-        discription: 'design',
-        status: 2,
-        image: 'images/VXbXtDMRAThBW6kb5wfwBUyEnlzxR.jpg',
-        __v: 0
-      },
-      {
-        _id: '656ee757400fff4fbecd45e9',
-        title: 'Programing',
-        discription: 'programming',
-        status: 2,
-        image: 'images/G9YIsiaTGEcKS5o9ITNezEIyCmnQ0.jpg',
-        __v: 0
-      }
+    // {
+    //     _id: '656ee679400fff4fbecd45d6',
+    //     title: 'Design',
+    //     discription: 'design',
+    //     status: 2,
+    //     image: 'images/VXbXtDMRAThBW6kb5wfwBUyEnlzxR.jpg',
+    //     __v: 0
+    //   },
+    //   {
+    //     _id: '656ee757400fff4fbecd45e9',
+    //     title: 'Programing',
+    //     discription: 'programming',
+    //     status: 2,
+    //     image: 'images/G9YIsiaTGEcKS5o9ITNezEIyCmnQ0.jpg',
+    //     __v: 0
+    //   }
 ]
 
 
 
 var modules = [
-    {
-        _id: '656ee6bf400fff4fbecd45db',
-        title: 'design a mobile app in Figma',
-        discription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eget elit iaculis, ultricies velit ut, varius orci. Proin et molestie felis. Etiam interdum nunc urna, non fermentum est tincidunt in. Proin finibus, nulla nec cursus faucibus, ex est lobortis erat, non rhoncus ipsum diam eget sapien. Donec id est at augue fermentum varius eu vitae lacus. Nullam ornare eu nisi nec tincidunt. Pellentesque iaculis rutrum rhoncus. Nam finibus dolor quam, id varius ipsum tempus vitae.',
-        notes: '',
-        duration: '3:32',
-        no_of_vids: 0,
-        price: 12,
-        likes: 0,
-        user_id: '656ede0b7e2b4c179b9181ae',
-        catagory_id: '656ee679400fff4fbecd45d6',
-        image: 'images/GASXdMcr8qyhpqMveCgZhhSnNCx4D.jpg',
-        status: 2,
-        bought_users: [],
-        __v: 0
-      },
-      {
-        _id: '656ee774400fff4fbecd45ee',
-        title: 'what is programming',
-        discription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eget elit iaculis, ultricies velit ut, varius orci. Proin et molestie felis. Etiam interdum nunc urna, non fermentum est tincidunt in. Proin finibus, nulla nec cursus faucibus, ex est lobortis erat, non rhoncus ipsum diam eget sapien. Donec id est at augue fermentum varius eu vitae lacus. Nullam ornare eu nisi nec tincidunt. Pellentesque iaculis rutrum rhoncus. Nam finibus dolor quam, id varius ipsum tempus vitae.',
-        notes: '',
-        duration: '1:20',
-        no_of_vids: 0,
-        price: 5,
-        likes: 0,
-        user_id: '656ede0b7e2b4c179b9181ae',
-        catagory_id: '656ee757400fff4fbecd45e9',
-        image: 'images/Ie0meIleSQEK5kCAS0oNvtm0LUFqB.jpg',
-        status: 2,
-        bought_users: [],
-        __v: 0
-      },
-      {
-        _id: '657021763ad4ab791f9cdbf9',
-        title: 'a small courese on programming ',
-        discription: 'Suspendisse potenti. Phasellus id maximus odio. Donec pulvinar lobortis quam vitae viverra. Fusce augue elit, aliquet sed malesuada ac, sagittis sit amet velit. Ut sem arcu, ornare at leo a, dignissim pellentesque dui. Morbi feugiat vitae mauris vel elementum. Nam id suscipit erat, in mollis massa. Quisque aliquam vel augue vel efficitur. Aliquam auctor gravida porttitor. Vivamus tempor velit at ornare viverra. Praesent semper consequat egestas. Suspendisse potenti. Mauris vitae nisl justo.',
-        notes: '',
-        duration: '1:0',
-        no_of_vids: 0,
-        price: 2,
-        likes: 0,
-        user_id: '6570202f3ad4ab791f9cdbeb',
-        catagory_id: '656ee757400fff4fbecd45e9',
-        image: 'images/RhsVCafabzjD6L6Nn6jZWFu4MrCvP.jpg',
-        status: 2,
-        bought_users: [],
-        __v: 0
-      }
+    // {
+    //     _id: '656ee6bf400fff4fbecd45db',
+    //     title: 'design a mobile app in Figma',
+    //     discription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eget elit iaculis, ultricies velit ut, varius orci. Proin et molestie felis. Etiam interdum nunc urna, non fermentum est tincidunt in. Proin finibus, nulla nec cursus faucibus, ex est lobortis erat, non rhoncus ipsum diam eget sapien. Donec id est at augue fermentum varius eu vitae lacus. Nullam ornare eu nisi nec tincidunt. Pellentesque iaculis rutrum rhoncus. Nam finibus dolor quam, id varius ipsum tempus vitae.',
+    //     notes: '',
+    //     duration: '3:32',
+    //     no_of_vids: 0,
+    //     price: 12,
+    //     likes: 0,
+    //     user_id: '656ede0b7e2b4c179b9181ae',
+    //     catagory_id: '656ee679400fff4fbecd45d6',
+    //     image: 'images/GASXdMcr8qyhpqMveCgZhhSnNCx4D.jpg',
+    //     status: 2,
+    //     bought_users: [],
+    //     __v: 0
+    //   },
+    //   {
+    //     _id: '656ee774400fff4fbecd45ee',
+    //     title: 'what is programming',
+    //     discription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eget elit iaculis, ultricies velit ut, varius orci. Proin et molestie felis. Etiam interdum nunc urna, non fermentum est tincidunt in. Proin finibus, nulla nec cursus faucibus, ex est lobortis erat, non rhoncus ipsum diam eget sapien. Donec id est at augue fermentum varius eu vitae lacus. Nullam ornare eu nisi nec tincidunt. Pellentesque iaculis rutrum rhoncus. Nam finibus dolor quam, id varius ipsum tempus vitae.',
+    //     notes: '',
+    //     duration: '1:20',
+    //     no_of_vids: 0,
+    //     price: 5,
+    //     likes: 0,
+    //     user_id: '656ede0b7e2b4c179b9181ae',
+    //     catagory_id: '656ee757400fff4fbecd45e9',
+    //     image: 'images/Ie0meIleSQEK5kCAS0oNvtm0LUFqB.jpg',
+    //     status: 2,
+    //     bought_users: [],
+    //     __v: 0
+    //   },
+    //   {
+    //     _id: '657021763ad4ab791f9cdbf9',
+    //     title: 'a small courese on programming ',
+    //     discription: 'Suspendisse potenti. Phasellus id maximus odio. Donec pulvinar lobortis quam vitae viverra. Fusce augue elit, aliquet sed malesuada ac, sagittis sit amet velit. Ut sem arcu, ornare at leo a, dignissim pellentesque dui. Morbi feugiat vitae mauris vel elementum. Nam id suscipit erat, in mollis massa. Quisque aliquam vel augue vel efficitur. Aliquam auctor gravida porttitor. Vivamus tempor velit at ornare viverra. Praesent semper consequat egestas. Suspendisse potenti. Mauris vitae nisl justo.',
+    //     notes: '',
+    //     duration: '1:0',
+    //     no_of_vids: 0,
+    //     price: 2,
+    //     likes: 0,
+    //     user_id: '6570202f3ad4ab791f9cdbeb',
+    //     catagory_id: '656ee757400fff4fbecd45e9',
+    //     image: 'images/RhsVCafabzjD6L6Nn6jZWFu4MrCvP.jpg',
+    //     status: 2,
+    //     bought_users: [],
+    //     __v: 0
+    //   }
 ]
 
 
 var vidoes = [
-    {
-        _id: '657011b029232711eb4456ef',
-        title: 'video one',
-        discription: 'Suspendisse potenti. Phasellus id maximus odio. Donec pulvinar lobortis quam vitae viverra. Fusce augue elit, aliquet sed malesuada ac, sagittis sit amet velit. Ut sem arcu, ornare at leo a, dignissim pellentesque dui. Morbi feugiat vitae mauris vel elementum. Nam id suscipit erat, in mollis massa. Quisque aliquam vel augue vel efficitur. Aliquam auctor gravida porttitor. Vivamus tempor velit at ornare viverra. Praesent semper consequat egestas. Suspendisse potenti. Mauris vitae nisl justo.',
-        duration: null,
-        thumb_img: 'images/nTFdBf6HWQsKvrObfTQIziNI3kIV3.jpg',
-        user_id: '656ede0b7e2b4c179b9181ae',
-        module_id: '656ee6bf400fff4fbecd45db',
-        status: 2,
-        path: 'vids/1697116505417_Coronavirus+disease+(COVID-19).mp4',
-        attachments: [ 'attachments/nFw6ePqjKG1kEOd8dOUBdB1AiYdqS.pdf' ],
-        __v: 0,
-        pah: 'vids/1697116555369_Cyber Security In 7 Minutes _ What Is Cyber Security_ How It Works_ _ Cyber Security _ Simplilearn.mp4'
-      },
-      {
-        _id: '657021a53ad4ab791f9cdbff',
-        title: 'programming tips',
-        discription: 'Suspendisse potenti. Phasellus id maximus odio. Donec pulvinar lobortis quam vitae viverra. Fusce augue elit, aliquet sed malesuada ac, sagittis sit amet velit. Ut sem arcu, ornare at leo a, dignissim pellentesque dui. Morbi feugiat vitae mauris vel elementum. Nam id suscipit erat, in mollis massa. Quisque aliquam vel augue vel efficitur. Aliquam auctor gravida porttitor. Vivamus tempor velit at ornare viverra. Praesent semper consequat egestas. Suspendisse potenti. Mauris vitae nisl justo.',
-        duration: null,
-        thumb_img: 'images/k7bABzpWlovtGLgSGPYmwtGL5UDyA.jpg',
-        user_id: '6570202f3ad4ab791f9cdbeb',
-        module_id: '657021763ad4ab791f9cdbf9',
-        status: 2,
-        path: 'vids/1691343461576_MySQL_Node.js_Express.mp4',
-        attachments: [],
-        __v: 0
-      }
+    // {
+    //     _id: '657011b029232711eb4456ef',
+    //     title: 'video one',
+    //     discription: 'Suspendisse potenti. Phasellus id maximus odio. Donec pulvinar lobortis quam vitae viverra. Fusce augue elit, aliquet sed malesuada ac, sagittis sit amet velit. Ut sem arcu, ornare at leo a, dignissim pellentesque dui. Morbi feugiat vitae mauris vel elementum. Nam id suscipit erat, in mollis massa. Quisque aliquam vel augue vel efficitur. Aliquam auctor gravida porttitor. Vivamus tempor velit at ornare viverra. Praesent semper consequat egestas. Suspendisse potenti. Mauris vitae nisl justo.',
+    //     duration: null,
+    //     thumb_img: 'images/nTFdBf6HWQsKvrObfTQIziNI3kIV3.jpg',
+    //     user_id: '656ede0b7e2b4c179b9181ae',
+    //     module_id: '656ee6bf400fff4fbecd45db',
+    //     status: 2,
+    //     path: 'vids/1697116505417_Coronavirus+disease+(COVID-19).mp4',
+    //     attachments: [ 'attachments/nFw6ePqjKG1kEOd8dOUBdB1AiYdqS.pdf' ],
+    //     __v: 0,
+    //     pah: 'vids/1697116555369_Cyber Security In 7 Minutes _ What Is Cyber Security_ How It Works_ _ Cyber Security _ Simplilearn.mp4'
+    //   },
+    //   {
+    //     _id: '657021a53ad4ab791f9cdbff',
+    //     title: 'programming tips',
+    //     discription: 'Suspendisse potenti. Phasellus id maximus odio. Donec pulvinar lobortis quam vitae viverra. Fusce augue elit, aliquet sed malesuada ac, sagittis sit amet velit. Ut sem arcu, ornare at leo a, dignissim pellentesque dui. Morbi feugiat vitae mauris vel elementum. Nam id suscipit erat, in mollis massa. Quisque aliquam vel augue vel efficitur. Aliquam auctor gravida porttitor. Vivamus tempor velit at ornare viverra. Praesent semper consequat egestas. Suspendisse potenti. Mauris vitae nisl justo.',
+    //     duration: null,
+    //     thumb_img: 'images/k7bABzpWlovtGLgSGPYmwtGL5UDyA.jpg',
+    //     user_id: '6570202f3ad4ab791f9cdbeb',
+    //     module_id: '657021763ad4ab791f9cdbf9',
+    //     status: 2,
+    //     path: 'vids/1691343461576_MySQL_Node.js_Express.mp4',
+    //     attachments: [],
+    //     __v: 0
+    //   }
 ]
 
 

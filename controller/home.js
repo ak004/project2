@@ -166,7 +166,7 @@ exports.home = function (req,res) {
 
 exports.home_page = async function (req,res) {
     await User.find({}).then((data)=> {
-        if(data.length==0){
+        if(false){
             var menus_data = defalult_data.menus;
             // save the menus first
              menus_data.forEach(element => {
