@@ -20,6 +20,29 @@ const OpenAI = require('openai');
 const openai = new OpenAI({
     apiKey: process.env.OPEN_AI_API2, // This is the default and can be omitted
   });
+
+  const {
+    GoogleGenerativeAI,
+    HarmCategory,
+    HarmBlockThreshold,
+  } = require('@google/generative-ai');
+
+  const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const model = genAI.getGenerativeModel({
+  model: 'gemini-1.5-flash',
+});
+
+const generationConfig = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 64,
+  maxOutputTokens: 8192,
+  responseMimeType: 'text/plain',
+};
+
+
 exports.get_cat = function (req,res) {
     console.log("yep the route that the app is calling is CORRECT")
     User.findOne({ _id:req.body.user_id}).then((user) => {
@@ -859,17 +882,9 @@ exports.send_chat = function (req,res) {
             })
             chat.save().then( async(svd) => {
                 if(svd) {
-                   var response = await generateResponse(req.body.msg)
-                    var response_message = [
-                        "Hey ther how are you doing",
-                        "I hope you are doing well",
-                        "I am here to help you",
-                        "How may I help you",
-                        "Its a nice weather today isnt it"
-                    ];
-                    var random = Math.floor(Math.random() * response_message.length);
+                   var response = await getChatResponse(req.body.msg)
                     var chat = new Chats({
-                        msg: response_message[random],
+                        msg: response,
                         type_user: "mentor",
                         user_id: user._id,
                         course_id: new mongoose.Types.ObjectId(req.body.course_id)
@@ -906,28 +921,79 @@ exports.send_chat = function (req,res) {
 
 
 exports.test_chat =  async function (req,res) {
-    var response = await generateResponse(req.body.msg);
-    console.log("-----------------the response is", response);
-    res.json({
-        success:true,
-        message:"Message sent and responsed",
-        response: response
-    })
+ 
+
+    const userInput = req.body.message;
+
+    if (!userInput) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+  
+    try {
+      const chatSession = model.startChat({
+        generationConfig,
+        // safetySettings: Adjust safety settings
+        // See https://ai.google.dev/gemini-api/docs/safety-settings
+        history: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: 'you are a mentor, and students would ask you questions related to different knowledge I want you to answer those questions and reject answering questions that are irrelevant to gaining knowledge also add some jokes when answering questions but not all the time',
+              },
+            ],
+          },
+          {
+            role: 'model',
+            parts: [
+              {
+                text: "Okay, I'm ready! Bring on the knowledge-seeking questions. Just remember, I'm here to help you learn, not to answer questions about the latest celebrity gossip (though, I'm pretty sure that J.cole's new album is going to be fire). 😉 Let's get started!",
+              },
+            ],
+          },
+        ],
+      });
+  
+      const result = await chatSession.sendMessage(userInput);
+      res.json({ response: result.response.text() });
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'An error occurred while processing your request' });
+    }
+
 }
 
-async function generateResponse(message) {
+ 
+async function getChatResponse(message) {
     try {
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: 'user', content: message}],
-        model: 'gpt-3.5-turbo',
-        max_tokens: 150  // Adjust max_tokens as per your needs
+      const chatSession = model.startChat({
+        generationConfig,
+        // safetySettings: Adjust safety settings
+        // See https://ai.google.dev/gemini-api/docs/safety-settings
+        history: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: 'you are a mentor, and students would ask you questions related to different knowledge I want you to answer those questions and reject answering questions that are irrelevant to gaining knowledge also add some jokes when answering questions but not all the time',
+              },
+            ],
+          },
+          {
+            role: 'model',
+            parts: [
+              {
+                text: "Okay, I'm ready! Bring on the knowledge-seeking questions. Just remember, I'm here to help you learn, not to answer questions about the latest celebrity gossip (though, I'm pretty sure that Beyoncé's new album is going to be fire). 😉 Let's get started!",
+              },
+            ],
+          },
+        ],
       });
-      console.log('Generated response:', completion.data.choices[0].text.trim());
-      console.log('Generated response:', completion);
   
-      return completion.data.choices[0].text.trim();
+      const result = await chatSession.sendMessage(message);
+      return result.response.text();
     } catch (error) {
-      console.error('Error fetching response from OpenAI API:', error);
-      return 'Error generating response';
+      console.error('Error:', error);
+      throw new Error('An error occurred while processing your request');
     }
   }

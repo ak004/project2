@@ -26,26 +26,6 @@ app.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
 // Set up CORS
 app.use(cors());
 
-
-app.use(express.static('./assets'));
-app.engine('html', require('ejs').renderFile);
-app.set('view engine', 'html');
-app.use(session({
-  resave: false,
-  saveUninitialized: true,
-  secret: 'resturant_secret',
-  maxAge: '18000'
-}));
-
-app.use('/images',express.static('images'))
-
-require("./routes/home")(app);
-require("./routes/apis")(app);
-app.use((err, req, res, next) => {
-  console.error("FROM MIDDLEWARE----------------------",err.stack);
-  res.status(500).send('Something broke!');
-});
-
 const db = "mongodb://0.0.0.0:27017/project2"
 
   const connectDB = async () => {
@@ -66,24 +46,57 @@ const db = "mongodb://0.0.0.0:27017/project2"
 connectDB();
 
 
+app.use(express.static('./assets'));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+app.use(session({
+  resave: false,
+  saveUninitialized: true,
+  secret: 'resturant_secret',
+  maxAge: '18000'
+}));
+
+app.use('/images',express.static('images'))
+
+require("./routes/home")(app);
+require("./routes/apis")(app);
 
 app.get("*", function (req, res) {
-    res.render("pages-error");
-  });
-  
+  res.render("pages-error");
+});
 
-  // Error-handling middleware
 app.use((err, req, res, next) => {
-  console.error("FROM MIDDLEWARE----------------------", err.stack);
+  console.error("FROM MIDDLEWARE----------------------",err.stack);
   res.status(500).send('Something broke!');
 });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error("Uncaught Exception: ", err.stack);
-  // Optionally exit the process
-  process.exit(1);
+
+
+
+
+
+
+
+const server = app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
+
+  // Error-handling middleware
+
+  process.on('uncaughtException', (err) => {
+    console.error("FROM process----------------------", err.stack);
+    // Safely close the server and then exit the process
+    // server.close(() => {
+    //   console.log('Server closed');
+    //   process.exit(1); // Exit with a failure code
+    // });
+  
+    // // If the server hasn't finished closing after a certain time, force exit
+    // setTimeout(() => {
+    //   console.error('Forcibly shutting down the server');
+    //   process.exit(1);
+    // }, 10000).unref(); // .unref() prevents this timeout from keeping the application open
+  });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
@@ -91,10 +104,3 @@ process.on('unhandledRejection', (reason, promise) => {
   // Optionally exit the process
   process.exit(1);
 });
-
-
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-  });
-
-
