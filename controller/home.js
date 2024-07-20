@@ -907,6 +907,8 @@ exports.modules = function (req,res) {
 
 exports.save_modules = function (req,res) {
     if (Object.keys(req.body).length > 0) {
+        console.log("the save body: ", req.body);
+
         if(req.body._id.length < 5) {
             console.log("the save body: ", req.body);
             console.log("the save body: ", req.files);
@@ -959,18 +961,24 @@ exports.save_modules = function (req,res) {
                         img = liner2
                   })
             }
+
+            // Construct the update object dynamically
+            let updateObject = {
+                title: req.body.m_title,
+                discription: req.body.desc,
+                duration: req.body.hours + ":" + req.body.min,
+                price: Number(req.body.price),
+                user_id: req.session.user._id,
+                catagory_id: req.body.m_cat, // Note: This field was duplicated in your original code
+                status: req.body.status == "active" ? 2 : 0
+            };
+
+            // Conditionally add the image field if liner2 has a value
+            if (liner2) {
+                updateObject.image = liner2;
+            }
             Modules.findByIdAndUpdate({_id: req.body._id}, {
-                $set:{
-                    title: req.body.title,
-                    discription: req.body.desc,
-                    duration: req.body.hours + ":" + req.body.min,
-                    price: Number(req.body.price),
-                    user_id: req.session.user._id,
-                    catagory_id:req.body.m_cat,
-                    catagory_id:req.body.m_cat,
-                    image:liner2,
-                    status: req.body.status == "active" ? 2 : 0
-                }
+                $set:updateObject
             }).then((upd) => {
                 if(upd) {
                     res.redirect('/modules')

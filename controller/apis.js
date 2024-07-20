@@ -16,10 +16,14 @@ const Resources = require('../model/resource.js')
 var moment = require("moment");
 var Chats = require('../model/chats.js');
 const OpenAI = require('openai');
-
-const openai = new OpenAI({
-    apiKey: process.env.OPEN_AI_API2, // This is the default and can be omitted
-  });
+// const fetch = (await import('node-fetch')).default;
+const fetch = require('node-fetch');
+// global.fetch = fetch;
+// global.Headers = fetch.Headers;
+// global.Request = fetch.Request;
+// global.Response = fetch.Response;
+// const fetch = require('node-fetch'); // Import node-fetch
+ 
 
   const {
     GoogleGenerativeAI,
@@ -27,7 +31,7 @@ const openai = new OpenAI({
     HarmBlockThreshold,
   } = require('@google/generative-ai');
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY2;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
@@ -963,9 +967,10 @@ exports.test_chat =  async function (req,res) {
 
 }
 
- 
+// console.log("work waryaa " + getChatResponse("hello there"));
 async function getChatResponse(message) {
     try {
+       
       const chatSession = model.startChat({
         generationConfig,
         // safetySettings: Adjust safety settings
